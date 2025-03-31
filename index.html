@@ -1,5 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,14 +12,14 @@
     }
     @keyframes screenGlitch {
       0% { transform: scale(1) rotate(0deg); }
-      50% { transform: scale(1.02) rotate(0.5deg); }
+      50% { transform: scale(1.01) rotate(1deg); }
       100% { transform: scale(1) rotate(0deg); }
     }
     .flame {
-      animation: flicker 0.5s infinite alternate;
+      animation: flicker 1s infinite alternate;
     }
     .screen-glitch {
-      animation: screenGlitch 0.2s ease-in-out 3;
+      animation: screenGlitch 0.4s ease-in-out 2;
     }
     .smoke {
       position: absolute;
@@ -38,7 +37,7 @@
       box-shadow: 0 0 10px red;
     }
     .button-animate {
-      transition: transform 0.2s ease;
+      transition: transform 0.3s ease;
     }
     .button-animate:active {
       transform: scale(0.95);
@@ -59,19 +58,14 @@
           Calculator from Hell 🔥
         </h1>
       </div>
-      <div class="bg-gray-800 p-4 rounded mb-4 h-24 relative overflow-hidden">
+      <div class="bg-gray-800 p-4 rounded mb-4 h-28 relative overflow-hidden">
         <div id="display" class="text-right text-2xl font-mono h-12 overflow-y-auto">0</div>
-        <div id="comment" class="text-sm text-red-400 italic h-8 overflow-y-auto">Welcome, mortal. Try not to embarrass yourself.</div>
+        <div id="comment" class="text-sm text-red-400 italic h-16 overflow-y-auto leading-snug">Welcome, mortal. Try not to embarrass yourself.</div>
       </div>
       <div class="grid grid-cols-4 gap-2" id="keypad"></div>
       <button id="jezos" class="mt-4 w-full bg-purple-800 hover:bg-purple-700 p-2 rounded">Jezos™</button>
     </div>
-  </div>
-
-  <audio id="evil-laugh" src="sounds/evillaugh.mp3" preload="auto"></audio>
-  <audio id="wrong-sound" src="sounds/wrong.mp3" preload="auto"></audio>
-  <audio id="correct-sound" src="sounds/correctanswer.mp3" preload="auto"></audio>
-  <audio id="sigh-sound" src="sounds/disappointed.mp3" preload="auto"></audio>
+  </div><audio id="evil-laugh" src="sounds/evillaugh.mp3" preload="auto"></audio> <audio id="wrong-sound" src="sounds/wrong.mp3" preload="auto"></audio> <audio id="correct-sound" src="sounds/correctanswer.mp3" preload="auto"></audio> <audio id="sigh-sound" src="sounds/disappointed.mp3" preload="auto"></audio>
 
   <script>
     const display = document.getElementById('display');
@@ -106,7 +100,7 @@
 
     function glitchEffect() {
       container.classList.add('screen-glitch');
-      setTimeout(() => container.classList.remove('screen-glitch'), 600);
+      setTimeout(() => container.classList.remove('screen-glitch'), 800);
     }
 
     function shuffle(array) {
@@ -152,21 +146,21 @@
         addComment(randomComment());
       }
       updateDisplay();
-      setTimeout(createKeypad, Math.random() * 7000 + 3000);
+      setTimeout(createKeypad, Math.random() * 8000 + 4000);
     }
 
     function randomComment() {
       const comments = [
         "You're really going for it, huh?",
         "Math... not even once.",
-        "Did your calculator license expire?",
-        "That's a number. I think.",
-        "Einstein is not impressed.",
-        "Behold, another useless input!",
-        "Your math skills are hell-worthy.",
-        "Oh good, you found the number keys.",
-        "What even *is* that?",
-        "This is why demons fear algebra."
+        "That input just funded another Jezos drone.",
+        "You’re halfway to launching this into Mars orbit.",
+        "This number? Very... Tesla Model 3 of you.",
+        "Flamethrower not included.",
+        "Even ChatGPT is sighing right now.",
+        "This math just got uploaded to the Neuralink.",
+        "That’s not wrong. It’s just... not right either.",
+        "Jezos smiles each time you mistype."
       ];
       return comments[Math.floor(Math.random() * comments.length)];
     }
@@ -175,30 +169,43 @@
       const phrases = [
         `It's ${result}, but don't act like you earned it.`,
         `Wow, ${result}. I'm floored. Not really.`,
-        `${result}... the pinnacle of your abilities.`,
-        `Congratulations. A toddler could've done that.`,
-        `${result}? I'm putting this in the hall of shame.`,
-        `${result}. It’s... technically not wrong.`,
-        `${result}? Bold. Reckless. Pointless.`,
-        `${result}, sure. Let's just go with that.`
+        `${result}? That's Bezos-approved.`,
+        `Musk calculated that in his sleep.`,
+        `${result}... now available on Amazon for $999.`
       ];
       return phrases[Math.floor(Math.random() * phrases.length)];
     }
 
+    function randomJezosButtonText() {
+      const options = [
+        "Jezos™",
+        "Order from Amazon",
+        "Launch to Mars",
+        "Buy Dogecoin",
+        "Flamethrower Mode"
+      ];
+      return options[Math.floor(Math.random() * options.length)];
+    }
+
     jezosBtn.addEventListener('click', () => {
       const quotes = [
-        "Jezos sneezes and makes more money than you'll see in a lifetime.",
-        "You're still using a calculator? Jezos uses quantum reality modifiers.",
-        "Prime shipping is faster than your brainwaves.",
-        "This calculator brought to you by Jezos—dictator of decimals."
+        "Jezos doesn't use calculators. He whispers to numbers.",
+        "Jeff just blinked and made another billion. You're typing.",
+        "This input just funded 0.0000001 seconds of a Blue Origin flight.",
+        "If this calculator had wheels, Elon would race it to Mars.",
+        "You’re helping Jeff buy another island. Keep going!",
+        "One small click for you, one giant neural implant for Musk.",
+        "Elon once did math on a flamethrower. It still works better than you.",
+        "You just added to Jeff’s empire. Again.",
+        "This equation was briefly considered for Neuralink training."
       ];
       addComment(quotes[Math.floor(Math.random() * quotes.length)]);
       playSound('evil');
       glitchEffect();
+      jezosBtn.textContent = randomJezosButtonText();
     });
 
     createKeypad();
     updateDisplay();
-  </script>
-</body>
+  </script></body>
 </html>
