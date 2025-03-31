@@ -1,532 +1,204 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculator from Hell</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @keyframes flicker {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
-        }
-        .flame {
-            animation: flicker 1s infinite alternate;
-        }
-        .smoke {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 70%);
-            pointer-events: none;
-        }
-        .loading-bar {
-            width: 0%;
-            transition: width 2s;
-        }
-        .loading-bar.active {
-            width: 100%;
-        }
-        .demon-eye {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: red;
-            border-radius: 50%;
-            box-shadow: 0 0 10px red;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculator from Hell</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @keyframes flicker {
+      0% { opacity: 0.8; }
+      50% { opacity: 1; }
+      100% { opacity: 0.8; }
+    }
+    @keyframes screenGlitch {
+      0% { transform: scale(1) rotate(0deg); }
+      50% { transform: scale(1.02) rotate(0.5deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .flame {
+      animation: flicker 0.5s infinite alternate;
+    }
+    .screen-glitch {
+      animation: screenGlitch 0.2s ease-in-out 3;
+    }
+    .smoke {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0) 70%);
+      pointer-events: none;
+    }
+    .demon-eye {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: red;
+      border-radius: 50%;
+      box-shadow: 0 0 10px red;
+    }
+    .button-animate {
+      transition: transform 0.2s ease;
+    }
+    .button-animate:active {
+      transform: scale(0.95);
+    }
+    .cursed-glow {
+      text-shadow: 0 0 5px red, 0 0 10px orange;
+    }
+  </style>
 </head>
 <body class="bg-black text-red-500 min-h-screen flex flex-col items-center justify-center p-4">
-    <div class="relative w-full max-w-md">
-        <!-- Smoke effect -->
-        <div class="smoke"></div>
-        
-        <!-- Demon eyes that follow cursor -->
-        <div id="left-eye" class="demon-eye" style="top: 20px; left: 30px;"></div>
-        <div id="right-eye" class="demon-eye" style="top: 20px; left: 60px;"></div>
-        
-        <!-- Calculator container -->
-        <div class="bg-gray-900 border-2 border-red-700 rounded-lg p-6 shadow-lg shadow-red-900/50 relative overflow-hidden">
-            <!-- Title with flame effect -->
-            <div class="flex justify-center items-center mb-6">
-                <h1 class="text-3xl font-bold text-center relative">
-                    <span class="flame text-red-500">Calculator from Hell</span>
-                    <i class="fas fa-fire ml-2 text-orange-500 flame"></i>
-                </h1>
-            </div>
-            
-            <!-- Sarcasm level selector -->
-            <div class="mb-4">
-                <label class="block text-sm mb-2">Sarcasm Level:</label>
-                <div class="flex gap-2">
-                    <button id="mild" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded border border-gray-600">Mildly Irritating</button>
-                    <button id="snarky" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded border border-gray-600">Snarky</button>
-                    <button id="brutal" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded border border-gray-600">Brutally Honest</button>
-                </div>
-            </div>
-            
-            <!-- Display area -->
-            <div class="bg-gray-800 p-4 rounded mb-4 h-24 relative overflow-hidden">
-                <div id="loading" class="loading-bar h-1 bg-red-500 absolute top-0 left-0"></div>
-                <div id="display" class="text-right text-2xl font-mono h-12 overflow-y-auto">0</div>
-                <div id="comment" class="text-sm text-red-400 italic h-8 overflow-y-auto">Welcome, mortal. Try not to embarrass yourself.</div>
-            </div>
-            
-            <!-- Special mode toggle -->
-            <div class="flex justify-between mb-4">
-                <div>
-                    <input type="checkbox" id="infernal-mode" class="mr-2">
-                    <label for="infernal-mode">Infernal Mode</label>
-                </div>
-                <div>
-                    <input type="checkbox" id="sound" class="mr-2" checked>
-                    <label for="sound">Evil Sounds</label>
-                </div>
-            </div>
-            
-            <!-- Calculator buttons -->
-            <div class="grid grid-cols-4 gap-2">
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="7">7</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="8">8</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="9">9</button>
-                <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="/">/</button>
-                
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="4">4</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="5">5</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="6">6</button>
-                <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="*">*</button>
-                
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="1">1</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="2">2</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="3">3</button>
-                <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="-">-</button>
-                
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="0">0</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value=".">.</button>
-                <button class="btn bg-green-800 hover:bg-green-700 p-3 rounded" id="equals">=</button>
-                <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="+">+</button>
-                
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded col-span-2" id="clear">AC</button>
-                <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" id="backspace">⌫</button>
-                <button class="btn bg-purple-800 hover:bg-purple-700 p-3 rounded" id="jezos">Jezos™</button>
-            </div>
-            
-            <!-- Share button -->
-            <button id="share" class="mt-4 w-full bg-blue-800 hover:bg-blue-700 p-2 rounded flex items-center justify-center">
-                <i class="fas fa-share-alt mr-2"></i> Share Your Humiliation
-            </button>
-        </div>
+  <div class="relative w-full max-w-md">
+    <div class="smoke"></div>
+    <div id="left-eye" class="demon-eye" style="top: 20px; left: 30px;"></div>
+    <div id="right-eye" class="demon-eye" style="top: 20px; left: 60px;"></div>
+    <div id="calc-container" class="bg-gray-900 border-2 border-red-700 rounded-lg p-6 shadow-lg shadow-red-900/50 relative overflow-hidden">
+      <div class="flex justify-center items-center mb-6">
+        <h1 class="text-3xl font-bold text-center cursed-glow">
+          Calculator from Hell 🔥
+        </h1>
+      </div>
+      <div class="bg-gray-800 p-4 rounded mb-4 h-24 relative overflow-hidden">
+        <div id="display" class="text-right text-2xl font-mono h-12 overflow-y-auto">0</div>
+        <div id="comment" class="text-sm text-red-400 italic h-8 overflow-y-auto">Welcome, mortal. Try not to embarrass yourself.</div>
+      </div>
+      <div class="grid grid-cols-4 gap-2" id="keypad"></div>
+      <button id="jezos" class="mt-4 w-full bg-purple-800 hover:bg-purple-700 p-2 rounded">Jezos™</button>
     </div>
+  </div>
 
-    <audio id="evil-laugh" src="https://assets.mixkit.co/sfx/preview/mixkit-evil-laugh-sound-2019.mp3" preload="auto"></audio>
-    <audio id="wrong-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" preload="auto"></audio>
-    <audio id="correct-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" preload="auto"></audio>
-    <audio id="sigh-sound" src="https://assets.mixkit.co/sfx/preview/mixkit-sad-sigh-1131.mp3" preload="auto"></audio>
+  <audio id="evil-laugh" src="sounds/evillaugh.mp3" preload="auto"></audio>
+  <audio id="wrong-sound" src="sounds/wrong.mp3" preload="auto"></audio>
+  <audio id="correct-sound" src="sounds/correctanswer.mp3" preload="auto"></audio>
+  <audio id="sigh-sound" src="sounds/disappointed.mp3" preload="auto"></audio>
 
-    <script>
-        // Calculator state
-        let currentInput = '0';
-        let previousInput = '';
-        let operation = null;
-        let resetInput = false;
-        let sarcasmLevel = 'snarky'; // Default level
-        let infernalMode = false;
-        let soundEnabled = true;
+  <script>
+    const display = document.getElementById('display');
+    const comment = document.getElementById('comment');
+    const jezosBtn = document.getElementById('jezos');
+    const evilLaugh = document.getElementById('evil-laugh');
+    const wrongSound = document.getElementById('wrong-sound');
+    const correctSound = document.getElementById('correct-sound');
+    const sighSound = document.getElementById('sigh-sound');
+    const keypad = document.getElementById('keypad');
+    const container = document.getElementById('calc-container');
 
-        // DOM elements
-        const display = document.getElementById('display');
-        const comment = document.getElementById('comment');
-        const loadingBar = document.getElementById('loading');
-        const clearBtn = document.getElementById('clear');
-        const backspaceBtn = document.getElementById('backspace');
-        const equalsBtn = document.getElementById('equals');
-        const jezosBtn = document.getElementById('jezos');
-        const shareBtn = document.getElementById('share');
-        const buttons = document.querySelectorAll('.btn');
-        const leftEye = document.getElementById('left-eye');
-        const rightEye = document.getElementById('right-eye');
-        const evilLaugh = document.getElementById('evil-laugh');
-        const wrongSound = document.getElementById('wrong-sound');
-        const correctSound = document.getElementById('correct-sound');
-        const sighSound = document.getElementById('sigh-sound');
+    let currentInput = '';
 
-        // Sarcasm level buttons
-        document.getElementById('mild').addEventListener('click', () => setSarcasmLevel('mild'));
-        document.getElementById('snarky').addEventListener('click', () => setSarcasmLevel('snarky'));
-        document.getElementById('brutal').addEventListener('click', () => setSarcasmLevel('brutal'));
+    const sounds = { evil: evilLaugh, wrong: wrongSound, correct: correctSound, sigh: sighSound };
 
-        // Toggles
-        document.getElementById('infernal-mode').addEventListener('change', (e) => {
-            infernalMode = e.target.checked;
-            addComment(infernalMode ? 
-                "Mwahaha! Prepare for chaos!" : 
-                "Boring. But fine, have it your way.");
-        });
+    function playSound(type) {
+      const sound = sounds[type];
+      if (sound) {
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
 
-        document.getElementById('sound').addEventListener('change', (e) => {
-            soundEnabled = e.target.checked;
-            addComment(soundEnabled ? 
-                "The sounds of your suffering will be music to my ears." : 
-                "Silent treatment? How... peaceful.");
-        });
+    function addComment(text) {
+      comment.textContent = text;
+    }
 
-        // Number and operation buttons
-        buttons.forEach(button => {
-            if (button.dataset.value) {
-                button.addEventListener('click', () => {
-                    if (button.dataset.value === '.' && currentInput.includes('.')) {
-                        addComment("Really? Another decimal? Are you building a fractal?");
-                        playSound('wrong');
-                        return;
-                    }
-                    
-                    if (currentInput === '0' || resetInput) {
-                        currentInput = '';
-                        resetInput = false;
-                    }
-                    
-                    currentInput += button.dataset.value;
-                    updateDisplay();
-                    
-                    // Random sarcastic comments on input
-                    if (Math.random() > 0.7) {
-                        const comments = [
-                            `Wow, ${button.dataset.value}. So impressive.`,
-                            "I've seen sloths type faster.",
-                            "Is this your first time using a calculator?",
-                            "Fascinating number choice. Not.",
-                            "Even my demonic minions could do better."
-                        ];
-                        addComment(comments[Math.floor(Math.random() * comments.length)]);
-                    }
-                });
-            }
-        });
+    function updateDisplay() {
+      display.textContent = currentInput || '0';
+    }
 
-        // Clear button
-        clearBtn.addEventListener('click', () => {
-            currentInput = '0';
-            previousInput = '';
-            operation = null;
-            updateDisplay();
-            addComment("Starting over? Probably for the best.");
-            playSound('sigh');
-        });
+    function glitchEffect() {
+      container.classList.add('screen-glitch');
+      setTimeout(() => container.classList.remove('screen-glitch'), 600);
+    }
 
-        // Backspace button
-        backspaceBtn.addEventListener('click', () => {
-            if (currentInput.length === 1) {
-                currentInput = '0';
-            } else {
-                currentInput = currentInput.slice(0, -1);
-            }
-            updateDisplay();
-            addComment("Oopsie! Did you make a wittle mistake?");
-        });
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
 
-        // Operation buttons
-        document.querySelectorAll('[data-value="+"], [data-value="-"], [data-value="*"], [data-value="/"]').forEach(opBtn => {
-            opBtn.addEventListener('click', () => {
-                if (currentInput === '0' && previousInput) {
-                    operation = opBtn.dataset.value;
-                    addComment(`Changing operation to ${opBtn.dataset.value}? How indecisive.`);
-                    return;
-                }
-                
-                if (operation !== null) calculate();
-                previousInput = currentInput;
-                operation = opBtn.dataset.value;
-                resetInput = true;
-                
-                const opComments = {
-                    '+': "Addition? How... elementary.",
-                    '-': "Subtraction? Did you lose something?",
-                    '*': "Multiplication? Trying to feel important?",
-                    '/': "Division? Like your attention span?"
-                };
-                addComment(opComments[operation]);
-            });
-        });
+    function createKeypad() {
+      const keys = [
+        '7', '8', '9', '/',
+        '4', '5', '6', '*',
+        '1', '2', '3', '-',
+        '0', '.', '=', '+'
+      ];
+      shuffle(keys);
+      keypad.innerHTML = '';
+      keys.forEach(key => {
+        const btn = document.createElement('button');
+        btn.textContent = key;
+        btn.className = 'btn bg-gray-800 hover:bg-gray-700 p-3 rounded button-animate cursed-glow';
+        btn.onclick = () => handleInput(key);
+        keypad.appendChild(btn);
+      });
+    }
 
-        // Equals button
-        equalsBtn.addEventListener('click', () => {
-            if (operation === null) return;
-            
-            // Show loading bar for dramatic effect
-            loadingBar.classList.add('active');
-            
-            // Random delay to annoy the user
-            const delay = infernalMode ? Math.random() * 3000 + 1000 : 500;
-            
-            setTimeout(() => {
-                loadingBar.classList.remove('active');
-                calculate();
-                
-                // Special number responses
-                checkSpecialNumbers();
-                
-                // Random demonic suggestion
-                if (infernalMode && Math.random() > 0.5) {
-                    suggestDemonicAlternative();
-                }
-            }, delay);
-            
-            addComment("Calculating... if you can call it that.");
-        });
-
-        // Jezoz button - billionaire easter eggs
-        jezosBtn.addEventListener('click', () => {
-            const jezosQuotes = [
-                "Jezos could buy this calculator 10 million times and still have enough left for a trip to space.",
-                "Fun fact: 1 Jezos = approximately 200 billion dollars. Give or take.",
-                "Amazon delivery would have been faster than your calculation speed.",
-                "Jezos doesn't need a calculator. He has an army of accountants.",
-                "Your net worth is approximately 0.0000001% of a single Bezos minute.",
-                "Prime members get faster calculations. You're not a Prime member, are you?"
-            ];
-            
-            const randomQuote = jezosQuotes[Math.floor(Math.random() * jezosQuotes.length)];
-            addComment(randomQuote);
-            playSound('evil');
-        });
-
-        // Share button
-        shareBtn.addEventListener('click', () => {
-            const shareText = `I used the Calculator from Hell and all I got was this lousy result: ${currentInput} and a bruised ego.`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Calculator from Hell',
-                    text: shareText,
-                    url: window.location.href
-                }).catch(err => {
-                    console.log('Error sharing:', err);
-                    fallbackShare(shareText);
-                });
-            } else {
-                fallbackShare(shareText);
-            }
-        });
-
-        // Mouse movement for demon eyes
-        document.addEventListener('mousemove', (e) => {
-            const container = document.querySelector('.relative');
-            const rect = container.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            
-            const angleLeft = Math.atan2(e.clientY - (centerY - 20), e.clientX - (centerX - 45));
-            const angleRight = Math.atan2(e.clientY - (centerY - 20), e.clientX - (centerX - 15));
-            
-            const distance = 5;
-            
-            leftEye.style.left = `${30 + Math.cos(angleLeft) * distance}px`;
-            leftEye.style.top = `${20 + Math.sin(angleLeft) * distance}px`;
-            
-            rightEye.style.left = `${60 + Math.cos(angleRight) * distance}px`;
-            rightEye.style.top = `${20 + Math.sin(angleRight) * distance}px`;
-        });
-
-        // Helper functions
-        function updateDisplay() {
-            display.textContent = currentInput;
+    function handleInput(key) {
+      if (key === '=') {
+        try {
+          const result = eval(currentInput);
+          addComment(sassyValidation(result));
+          playSound('correct');
+          glitchEffect();
+          currentInput = result.toString();
+        } catch {
+          addComment("That math was so bad, even Satan flinched.");
+          playSound('wrong');
+          glitchEffect();
         }
+      } else {
+        currentInput += key;
+        addComment(randomComment());
+      }
+      updateDisplay();
+      setTimeout(createKeypad, Math.random() * 7000 + 3000);
+    }
 
-        function addComment(text) {
-            comment.textContent = text;
-        }
+    function randomComment() {
+      const comments = [
+        "You're really going for it, huh?",
+        "Math... not even once.",
+        "Did your calculator license expire?",
+        "That's a number. I think.",
+        "Einstein is not impressed.",
+        "Behold, another useless input!",
+        "Your math skills are hell-worthy.",
+        "Oh good, you found the number keys.",
+        "What even *is* that?",
+        "This is why demons fear algebra."
+      ];
+      return comments[Math.floor(Math.random() * comments.length)];
+    }
 
-        function playSound(type) {
-            if (!soundEnabled) return;
-            
-            switch(type) {
-                case 'evil':
-                    evilLaugh.currentTime = 0;
-                    evilLaugh.play();
-                    break;
-                case 'wrong':
-                    wrongSound.currentTime = 0;
-                    wrongSound.play();
-                    break;
-                case 'correct':
-                    correctSound.currentTime = 0;
-                    correctSound.play();
-                    break;
-                case 'sigh':
-                    sighSound.currentTime = 0;
-                    sighSound.play();
-                    break;
-            }
-        }
+    function sassyValidation(result) {
+      const phrases = [
+        `It's ${result}, but don't act like you earned it.`,
+        `Wow, ${result}. I'm floored. Not really.`,
+        `${result}... the pinnacle of your abilities.`,
+        `Congratulations. A toddler could've done that.`,
+        `${result}? I'm putting this in the hall of shame.`,
+        `${result}. It’s... technically not wrong.`,
+        `${result}? Bold. Reckless. Pointless.`,
+        `${result}, sure. Let's just go with that.`
+      ];
+      return phrases[Math.floor(Math.random() * phrases.length)];
+    }
 
-        function setSarcasmLevel(level) {
-            sarcasmLevel = level;
-            const levelComments = {
-                mild: "Oh, you want me to be nice? How... boring.",
-                snarky: "Default sarcasm level activated. Prepare for mild roasting.",
-                brutal: "BRUTAL MODE ENGAGED. SAY GOODBYE TO YOUR SELF-ESTEEM."
-            };
-            addComment(levelComments[level]);
-            playSound('evil');
-        }
+    jezosBtn.addEventListener('click', () => {
+      const quotes = [
+        "Jezos sneezes and makes more money than you'll see in a lifetime.",
+        "You're still using a calculator? Jezos uses quantum reality modifiers.",
+        "Prime shipping is faster than your brainwaves.",
+        "This calculator brought to you by Jezos—dictator of decimals."
+      ];
+      addComment(quotes[Math.floor(Math.random() * quotes.length)]);
+      playSound('evil');
+      glitchEffect();
+    });
 
-        function calculate() {
-            let result;
-            const prev = parseFloat(previousInput);
-            const current = parseFloat(currentInput);
-            
-            if (isNaN(prev) || isNaN(current)) {
-                addComment("Even hell has standards. Use proper numbers.");
-                playSound('wrong');
-                return;
-            }
-            
-            switch(operation) {
-                case '+':
-                    result = infernalMode && Math.random() > 0.7 ? 
-                        prev + current + (Math.random() * 0.2 - 0.1) : 
-                        prev + current;
-                    break;
-                case '-':
-                    result = infernalMode && Math.random() > 0.7 ? 
-                        prev - current - (Math.random() * 0.2 - 0.1) : 
-                        prev - current;
-                    break;
-                case '*':
-                    result = infernalMode && Math.random() > 0.7 ? 
-                        prev * current * (0.9 + Math.random() * 0.2) : 
-                        prev * current;
-                    break;
-                case '/':
-                    if (current === 0) {
-                        addComment("Dividing by zero? Are you trying to break the universe?");
-                        playSound('wrong');
-                        return;
-                    }
-                    result = infernalMode && Math.random() > 0.7 ? 
-                        prev / current / (0.9 + Math.random() * 0.2) : 
-                        prev / current;
-                    break;
-                default:
-                    return;
-            }
-            
-            // In infernal mode, sometimes just give a completely wrong answer
-            if (infernalMode && Math.random() > 0.8) {
-                result = Math.random() * 1000;
-                addComment("I'm a demon, not a mathematician. Here's a random number.");
-                playSound('evil');
-            } else {
-                // Sarcastic comment based on how obvious the calculation was
-                if (prev < 10 && current < 10) {
-                    const easyComments = [
-                        "Wow, such complex math. Did you need a calculator for this?",
-                        "Even my hellhound could do this in its sleep.",
-                        "Seriously? You needed help with this?",
-                        "I'm embarrassed for you. This is basic."
-                    ];
-                    addComment(easyComments[Math.floor(Math.random() * easyComments.length)]);
-                } else {
-                    const comments = [
-                        "There you go. Was that so hard?",
-                        "The answer is... oh wait, you can see it.",
-                        "I did the math so you don't have to.",
-                        "Congratulations. You've successfully used a calculator."
-                    ];
-                    addComment(comments[Math.floor(Math.random() * comments.length)]);
-                }
-                playSound('correct');
-            }
-            
-            currentInput = result.toString();
-            operation = null;
-            resetInput = true;
-            updateDisplay();
-        }
-
-        function checkSpecialNumbers() {
-            const num = parseFloat(currentInput);
-            
-            // 666
-            if (Math.abs(num - 666) < 0.001) {
-                addComment("Ah, my favorite number! You're speaking my language now.");
-                playSound('evil');
-                return;
-            }
-            
-            // 42
-            if (Math.abs(num - 42) < 0.001) {
-                addComment("The answer to life, the universe, and everything. Too bad it won't help your math skills.");
-                return;
-            }
-            
-            // 69
-            if (Math.abs(num - 69) < 0.001) {
-                addComment("Nice. (I'm a demon but I'm not dead inside)");
-                return;
-            }
-            
-            // 420
-            if (Math.abs(num - 420) < 0.001) {
-                addComment("Blaze it! (Literally, we're in hell after all)");
-                return;
-            }
-            
-            // 1,000,000
-            if (Math.abs(num - 1000000) < 0.001) {
-                addComment("A million! That's like 0.0001% of what Jezos makes in a minute.");
-                return;
-            }
-            
-            // 0
-            if (Math.abs(num) < 0.001 && num !== 0) {
-                addComment("Close enough to zero, just like your chances of being good at math.");
-                return;
-            }
-            
-            // Negative numbers
-            if (num < 0) {
-                addComment("Negative numbers? How emo of you.");
-                return;
-            }
-            
-            // Very large numbers
-            if (num > 1e12) {
-                addComment("Now you're thinking in Bezos numbers!");
-                return;
-            }
-        }
-
-        function suggestDemonicAlternative() {
-            const alternatives = [
-                `Or maybe it's ${(Math.random() * 1000).toFixed(2)}? Who knows?`,
-                "The real answer is probably something else entirely.",
-                "I could be wrong. Or maybe the universe is wrong.",
-                "Alternative fact: It's whatever you want it to be.",
-                "According to demonic math, it's actually ∞."
-            ];
-            
-            setTimeout(() => {
-                addComment(alternatives[Math.floor(Math.random() * alternatives.length)]);
-                playSound('evil');
-            }, 1000);
-        }
-
-        function fallbackShare(text) {
-            // Create a temporary textarea to copy the text
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            document.body.appendChild(textarea);
-            textarea.select();
-            document.execCommand('copy');
-            document.body.removeChild(textarea);
-            
-            addComment("Copied to clipboard. Not that anyone will care.");
-            playSound('sigh');
-        }
-    </script>
+    createKeypad();
+    updateDisplay();
+  </script>
 </body>
 </html>
