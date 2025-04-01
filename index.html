@@ -425,44 +425,47 @@
         // --- Core Button Handling Logic ---
         function handleButtonPress(button) {
             if (interactionLocked) return;
-            interactionLocked = false;
+            // interactionLocked = true;
         
             const value = button.dataset.value;
             const id = button.id;
             let actionFn;
         
-            // Buttons without data-value use IDs
-            if (!value) {
-                switch (id) {
-                    case 'clear': actionFn = handleClear; break;
-                    case 'backspace': actionFn = handleBackspace; break;
-                    case 'equals': actionFn = handleEquals; break;
-                    case 'megacorp': actionFn = handleMegaCorp; break;
-                    case 'share': actionFn = handleShare; break;
-                    default: actionFn = () => {};
-                }
-            } else {
-                // Check if it's an operator
-                const operators = ['/', '*', '-', '+'];
-                const corruptedValue = (infernalMode && !isNaN(Number(value)) && Math.random() < INPUT_CORRUPTION_CHANCE)
-                    ? Math.floor(Math.random() * 10).toString()
-                    : value;
-                
-                if (infernalMode && corruptedValue !== value && !isNaN(Number(value))) {
+            const operators = ['/', '*', '-', '+'];
+            const isOperator = operators.includes(value);
+        
+            // Handle buttons by ID
+            switch (id) {
+                case 'clear': actionFn = handleClear; break;
+                case 'backspace': actionFn = handleBackspace; break;
+                case 'equals': actionFn = handleEquals; break;
+                case 'megacorp': actionFn = handleMegaCorp; break;
+                case 'share': actionFn = handleShare; break;
+            }
+        
+            // If it's a number or operator with a value
+            if (!actionFn && value !== undefined) {
+                let corruptedValue = value;
+                if (infernalMode && !isNaN(Number(value)) && Math.random() < INPUT_CORRUPTION_CHANCE) {
+                    corruptedValue = Math.floor(Math.random() * 10).toString();
                     addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
                     playSound('wrong');
                     flashScreen();
                 }
         
-                if (operators.includes(value)) {
-                    actionFn = () => handleOperatorInput(value);
+                if (isOperator) {
+                    actionFn = () => handleOperatorInput(corruptedValue);
                 } else {
                     actionFn = () => handleValueInput(corruptedValue);
                 }
             }
         
-            randomizeButtonText();
+            if (!actionFn) {
+                console.warn("No action defined for button:", button);
+                return;
+            }
         
+            interactionLocked = true;
             setTimeout(() => {
                 actionFn();
                 applyRandomEffects(id || value);
