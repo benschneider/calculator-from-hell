@@ -359,7 +359,7 @@
             "Pushing buttons, achieving nothing.", "Is {val} your final answer? Pathetic.",
              "Entropy increases with every press.", "Even demons find this pace tedious."
         ]; // Add more
-        const commentsOperation = { /* Kept previous comments */ };
+        // const commentsOperation = { /* Kept previous comments */ };
         const commentsEasyResult = [ /* Kept previous comments */ "My abacus is faster.", "A truly monumental calculation. For an ant."];
         const commentsHardResult = [ /* Kept previous comments */ "Behold! Mediocrity quantified!", "Don't hurt yourself thinking."];
         const commentsMegaCorp = [ // Renamed and updated
@@ -425,16 +425,16 @@
         // --- Core Button Handling Logic ---
         function handleButtonPress(button) {
             if (interactionLocked) return;
-            // interactionLocked = true;
+            interactionLocked = true;
         
             const value = button.dataset.value;
             const id = button.id;
             let actionFn;
         
             const operators = ['/', '*', '-', '+'];
-            const isOperator = operators.includes(value);
+            const isOperator = value && operators.includes(value);
         
-            // Handle buttons by ID
+            // Assign actions based on ID first
             switch (id) {
                 case 'clear': actionFn = handleClear; break;
                 case 'backspace': actionFn = handleBackspace; break;
@@ -443,9 +443,10 @@
                 case 'share': actionFn = handleShare; break;
             }
         
-            // If it's a number or operator with a value
+            // If still undefined, it must be a value (number/operator)
             if (!actionFn && value !== undefined) {
                 let corruptedValue = value;
+        
                 if (infernalMode && !isNaN(Number(value)) && Math.random() < INPUT_CORRUPTION_CHANCE) {
                     corruptedValue = Math.floor(Math.random() * 10).toString();
                     addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
@@ -460,12 +461,14 @@
                 }
             }
         
+            // If actionFn is still undefined, abort
             if (!actionFn) {
                 console.warn("No action defined for button:", button);
                 return;
             }
         
             interactionLocked = true;
+        
             setTimeout(() => {
                 actionFn();
                 applyRandomEffects(id || value);
