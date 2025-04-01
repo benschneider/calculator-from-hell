@@ -434,11 +434,11 @@
             } else {
                 // Check if it's an operator
                 const operators = ['/', '*', '-', '+'];
-                const corruptedValue = (infernalMode && !isNaN(value) && Math.random() < INPUT_CORRUPTION_CHANCE)
+                const corruptedValue = (infernalMode && !isNaN(Number(value)) && Math.random() < INPUT_CORRUPTION_CHANCE)
                     ? Math.floor(Math.random() * 10).toString()
                     : value;
-        
-                if (infernalMode && corruptedValue !== value && !isNaN(value)) {
+                
+                if (infernalMode && corruptedValue !== value && !isNaN(Number(value))) {
                     addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
                     playSound('wrong');
                     flashScreen();
