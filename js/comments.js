@@ -1,9 +1,3 @@
-export const commentsOperation = {
-    '+': ["Addition? Really stretching your limits there.", "More? Always more with you.", "Adding things won’t fill the void."],
-    '-': ["Subtraction? Trying to make yourself smaller?", "Taking things away, like your motivation?", "Subtracting... your dignity."],
-    '*': ["Multiplying? Someone thinks they're fancy.", "Exponential disappointment incoming.", "Don't get too carried away now."],
-    '/': ["Division? Dividing what’s already broken?", "Splitting hairs, are we?", "Divide and... flail."]
-};
 
 const commentsEasyResult = [
     "Wow, such complex math. Did you need a calculator for this?",

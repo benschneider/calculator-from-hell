@@ -173,17 +173,17 @@ function updateDisplay() {
 
 function randomizeMegaCorpButton() {
     const mode = megaCorpModes[currentCorpIndex];
-    megaCorpBtn.textContent = mode.label;
-    //megaCorpBtn.textContent = mode.label || "MegaCorp";
+    if (mode.label) {
+        megaCorpBtn.textContent = mode.label;
+    } else {
+        megaCorpBtn.textContent = "MegaCorp™";
+    }
     currentCorpIndex = (currentCorpIndex + 1) % megaCorpModes.length;
 }
 
 function handleMegaCorp() {
     const mode = megaCorpModes[(currentCorpIndex - 1 + megaCorpModes.length) % megaCorpModes.length];
     const quoteList = [...mode.comments];
-    if (mode.quotes && mode.quotes.length > 0) {
-        quoteList.push(...mode.quotes);
-    }
     const quote = quoteList[Math.floor(Math.random() * quoteList.length)];
     addComment(quote);
     playSound('evil');
