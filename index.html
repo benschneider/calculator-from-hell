@@ -4,723 +4,737 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator from Hell</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @keyframes flicker {
-            0% { opacity: 0.8; }
-            50% { opacity: 1; }
-            100% { opacity: 0.8; }
+        /* --- Base Styles & Animations --- */
+        @keyframes flicker { 0% { opacity: 0.8; } 50% { opacity: 1; } 100% { opacity: 0.8; } }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes intenseShake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+        @keyframes heatDistortion { /* Subtle wavy effect */
+            0% { filter: blur(0.2px) contrast(1.05); transform: skewX(-0.1deg); }
+            25% { filter: blur(0.1px) contrast(1.0); transform: skewX(0.1deg); }
+            50% { filter: blur(0.3px) contrast(1.1); transform: skewY(-0.1deg); }
+            75% { filter: blur(0.1px) contrast(1.0); transform: skewY(0.1deg); }
+            100% { filter: blur(0.2px) contrast(1.05); transform: skewX(-0.1deg); }
+        }
+        @keyframes glyphFlicker { /* For the demonic glyphs */
+             0%, 100% { opacity: 0; }
+             10%, 90% { opacity: 0.1; }
+             30%, 70% { opacity: 0.05; }
+             50% { opacity: 0.15; }
         }
 
-        .flame {
-            animation: flicker 1s infinite alternate;
+        body {
+            background-color: black;
+            /* Optional: Animated hellish background */
+            /* background-image: url('path/to/your/animated_hell_texture.gif'); */
+            color: #ff4444;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+            transition: background-color 0.1s ease;
+            font-family: 'Courier New', Courier, monospace; /* More hellish font */
+            overflow: hidden; /* Prevent scrollbars from distortion */
         }
 
-        .smoke {
-            position: absolute;
+        #calculator-wrapper {
+            position: relative;
             width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0) 70%);
-            pointer-events: none;
+            max-width: 480px;
+            transition: transform 0.3s ease;
+            /* Apply heat distortion here */
+            animation: none; /* Start with no animation */
+        }
+        #calculator-wrapper.distorted {
+            animation: heatDistortion 1.5s ease-in-out infinite alternate;
         }
 
-        .loading-bar {
-            width: 0%;
-            transition: width 2s;
-        }
 
-        .loading-bar.active {
-            width: 100%;
-        }
+        .flame { animation: flicker 1s infinite alternate; }
+        .smoke { position: absolute; width: 100%; height: 100%; background: radial-gradient(circle, rgba(10,0,0,0.15) 0%, rgba(0,0,0,0) 70%); pointer-events: none; mix-blend-mode: overlay; }
+
+        .loading-bar { width: 0%; transition: width 2s; }
+        .loading-bar.active { width: 100%; }
 
         .demon-eye {
             position: absolute;
             width: 20px;
             height: 20px;
-            background: red;
+            background-color: red;
             border-radius: 50%;
-            box-shadow: 0 0 10px red;
-            transition: all 0.1s ease-in-out; /* Smooth eye movement */
-        }
-
-        .btn {
-            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); /* Bouncy animation */
-        }
-
-        .btn:active {
-            transform: scale(0.9); /* Add a scale effect when pressed */
-            transition: transform 0.1s ease; /* Quick transition for the scale effect */
+            box-shadow: 0 0 15px red, 0 0 5px darkred inset; /* Enhanced glow */
+            transition: all 0.1s ease-in-out;
         }
 
         #calculator {
-            transition: transform 0.3s ease; /* Smooth transition for calculator movement */
+            background-color: #1a1a1a; /* Slightly darker */
+            border: 2px solid #660000; /* Deeper red border */
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            box-shadow: 0 0.25rem 0.5rem rgba(100, 0, 0, 0.4), 0 0 30px rgba(50,0,0,0.3) inset; /* More intense shadow */
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Add a CSS class for the "advertisement" */
-        .advertisement {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: red;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 2em;
+        /* Title */
+        #calculator h1 {
+            font-size: 1.875rem;
+            font-weight: bold;
             text-align: center;
-            z-index: 10;
-            cursor: pointer;
+            position: relative;
+            margin-bottom: 1.5rem;
+            color: #ff5555;
+            text-shadow: 0 0 5px #ff0000;
         }
 
-        /* Add a CSS class for a fake loading spinner */
-        .spinner {
-            border: 5px solid rgba(255, 0, 0, 0.3);
-            border-radius: 50%;
-            border-top: 5px solid red;
-            width: 50px;
-            height: 50px;
-            animation: spin 2s linear infinite;
-            margin: 0 auto;
+        /* Sarcasm Level */
+        #calculator label { display: block; font-size: 0.875rem; margin-bottom: 0.5rem; color: #ff8888; }
+        #calculator .sarcasm-buttons { display: flex; gap: 0.5rem; }
+        #calculator .sarcasm-buttons button {
+            background-color: #333; color: #ccc; padding: 0.25rem 0.75rem; border-radius: 0.25rem;
+            border: 1px solid #555; cursor: pointer; transition: background-color 0.2s;
+        }
+        #calculator .sarcasm-buttons button:hover { background-color: #550000; border-color: #770000; color: #ffaaaa;}
+
+        /* Display Area */
+        #calculator .display-area {
+            background-color: #111; /* Even darker display */
+            border: 1px solid #440000;
+            padding: 1rem; border-radius: 0.25rem; margin-bottom: 1rem;
+            height: 6rem; position: relative; overflow: hidden;
+            display: flex; flex-direction: column; justify-content: space-between;
+            min-height: 6rem;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5) inset;
+        }
+        /* Demonic Glyph pseudo-element */
+        #calculator .display-area::before {
+            content: "⊕⛧⊗"; /* Example demonic symbols */
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            font-size: 4rem;
+            color: #ff0000;
+            text-align: center;
+            line-height: 6rem;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0; /* Start hidden */
+            animation: none; /* Controlled by JS */
+            mix-blend-mode: overlay;
+            text-shadow: 0 0 10px red;
+        }
+        #calculator .display-area.glyph-active::before {
+             animation: glyphFlicker 2s ease-in-out infinite;
         }
 
-        @keyframes spin {
-            0% {
-                transform: rotate(0deg);
-            }
-            100% {
-                transform: rotate(360deg);
-            }
+
+        #calculator .display-area .loading-bar { position: absolute; top: 0; left: 0; height: 0.25rem; background-color: #ff0000; box-shadow: 0 0 5px #ff0000; }
+        #calculator .display-area .display-text {
+            text-align: right; font-size: 1.5rem; font-family: monospace;
+            height: 3rem; overflow-y: auto; word-wrap: break-word; flex-grow: 1;
+            color: #00ff00; /* Matrix green for contrast */
+            text-shadow: 0 0 5px #00ff00;
+            position: relative; /* Needed for z-index */
+            z-index: 1; /* Keep text above glyphs */
         }
+        #calculator .display-area .comment-text {
+            font-size: 0.875rem; color: #ff6666; font-style: italic;
+            height: 2rem; overflow-y: auto; flex-shrink: 0;
+            position: relative; z-index: 1; /* Keep text above glyphs */
+        }
+
+        /* Special Mode Toggle */
+        #calculator .toggle-container { display: flex; justify-content: space-between; margin-bottom: 1rem; }
+        #calculator .toggle-container input[type="checkbox"] { margin-right: 0.5rem; accent-color: red; }
+        #calculator .toggle-container label { color: #ffaaaa; }
+
+
+        /* Buttons */
+        #calculator .buttons-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; }
+        #calculator .buttons-grid button {
+            background-color: #2a2a2a; color: #ccc; padding: 0.75rem; border-radius: 0.25rem;
+            cursor: pointer; transition: all 0.3s ease; border: 1px solid #444;
+            font-size: 1.1rem; line-height: 1; font-weight: bold;
+            box-shadow: 0 2px 3px rgba(0,0,0,0.4), 0 1px 1px rgba(255,255,255,0.1) inset;
+        }
+        #calculator .buttons-grid button:hover { background-color: #444; border-color: #666; color: #fff; }
+        #calculator .buttons-grid button:active { transform: scale(0.95); box-shadow: 0 1px 1px rgba(0,0,0,0.4); }
+
+        #calculator .buttons-grid button.operator { background-color: #600; border-color: #800; color: #eee; }
+        #calculator .buttons-grid button.operator:hover { background-color: #800; border-color: #a00; }
+        #calculator .buttons-grid button.equals { background-color: #060; border-color: #080; color: #eee; }
+        #calculator .buttons-grid button.equals:hover { background-color: #080; border-color: #0a0; }
+        #calculator .buttons-grid button.corp { background-color: #404; border-color: #606; color: #eee; } /* Changed from special */
+        #calculator .buttons-grid button.corp:hover { background-color: #606; border-color: #808; }
+        #calculator .buttons-grid button.clear { background-color: #555; border-color: #777; color: #eee; }
+        #calculator .buttons-grid button.clear:hover { background-color: #777; border-color: #999; }
+
+        #calculator .buttons-grid button.span-2 { grid-column: span 2; }
+
+        /* Share Button */
+        #calculator button#share {
+            background-color: #003366; color: #eee; padding: 0.5rem 1rem; border-radius: 0.25rem;
+            display: flex; align-items: center; justify-content: center; width: 100%; margin-top: 1rem;
+            border: 1px solid #0055aa; cursor: pointer; font-size: 1rem; font-weight: bold;
+            text-shadow: 1px 1px 2px black;
+        }
+        #calculator button#share:hover { background-color: #004488; border-color: #0066cc; }
+
+        /* Flashup Styles */
+        .flashup {
+            position: absolute; top: 10%; left: 10%; width: 80%; height: 80%;
+            background-color: rgba(20, 0, 0, 0.95); /* More opaque */
+            color: #ff4444; display: flex; flex-direction: column; justify-content: center;
+            align-items: center; font-size: 1.5em; text-align: center;
+            z-index: 100; cursor: pointer; border: 2px solid #ff0000;
+            box-shadow: 0 0 25px #ff0000, 0 0 15px #660000 inset;
+            padding: 20px; border-radius: 10px; opacity: 0;
+            animation: fadeInFlashup 0.5s forwards;
+            text-shadow: 1px 1px 3px black;
+        }
+        @keyframes fadeInFlashup { from { opacity: 0; transform: scale(0.8) rotate(-5deg); } to { opacity: 1; transform: scale(1) rotate(0deg); } }
+
+        .flashup-icon { /* Using character entities now */
+             font-size: 3em; margin-bottom: 15px; display: inline-block;
+             animation: intenseShake 0.4s ease-in-out infinite alternate;
+        }
+        .flashup-title { font-weight: bold; margin-bottom: 10px; font-size: 1.2em; text-transform: uppercase; letter-spacing: 2px; color: #ffff88; text-shadow: 0 0 5px yellow; }
+        .flashup-message { font-size: 0.9em; }
+        .spinner { border: 5px solid rgba(255, 0, 0, 0.3); border-radius: 50%; border-top: 5px solid red; width: 50px; height: 50px; animation: spin 1.5s linear infinite; margin-top: 15px; }
+
+        /* Screen Flash Effect */
+        .screen-flash { background-color: #660000 !important; }
+
     </style>
 </head>
-<body class="bg-black text-red-500 min-h-screen flex flex-col items-center justify-center p-4">
-<div id="calculator" class="relative w-full max-w-md">
-    <!-- Smoke effect -->
-    <div class="smoke"></div>
+<body> <!-- Removed Tailwind classes -->
+    <div id="calculator-wrapper"> <!-- Added wrapper -->
+        <div class="smoke"></div>
+        <div id="left-eye" class="demon-eye" style="top: 20px; left: 30px;"></div>
+        <div id="right-eye" class="demon-eye" style="top: 20px; left: 60px;"></div>
 
-    <!-- Demon eyes that follow cursor -->
-    <div id="left-eye" class="demon-eye" style="top: 20px; left: 30px;"></div>
-    <div id="right-eye" class="demon-eye" style="top: 20px; left: 60px;"></div>
+        <div id="calculator">
 
-    <!-- Calculator container -->
-    <div class="bg-gray-900 border-2 border-red-700 rounded-lg p-6 shadow-lg shadow-red-900/50 relative overflow-hidden">
+            <!-- Title -->
+            <h1>
+                <span class="flame">Calculator from Hell</span>
+                <span class="flame"> 🔥</span>
+            </h1>
 
-        <!-- Title with flame effect -->
-        <div class="flex justify-center items-center mb-6">
-            <h1 class="text-3xl font-bold text-center relative">
-                    <span class="flame text-red-500">Calculator from Hell</span>
-                    <i class="fas fa-fire ml-2 text-orange-500 flame"></i>
-                </h1>
-        </div>
-
-        <!-- Sarcasm level selector -->
-        <div class="mb-4">
-            <label class="block text-sm mb-2">Sarcasm Level:</label>
-            <div class="flex gap-2">
-                <button id="mild" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded border border-gray-600">Mildly
-                    Irritating
-                </button>
-                <button id="snarky" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded border border-gray-600">Snarky
-                </button>
-                <button id="brutal" class="bg-gray-800 hover:bg-gray-700 px-3 py-1 rounded border border-gray-600">Brutally
-                    Honest
-                </button>
-            </div>
-        </div>
-
-        <!-- Display area -->
-        <div class="bg-gray-800 p-4 rounded mb-4 h-24 relative overflow-hidden">
-            <div id="loading" class="loading-bar h-1 bg-red-500 absolute top-0 left-0"></div>
-            <div id="display" class="text-right text-2xl font-mono h-12 overflow-y-auto">0</div>
-            <div id="comment" class="text-sm text-red-400 italic h-8 overflow-y-auto">Welcome, mortal. Try not to
-                embarrass yourself.
-            </div>
-        </div>
-
-        <!-- Special mode toggle -->
-        <div class="flex justify-between mb-4">
+            <!-- Sarcasm Level -->
             <div>
-                <input type="checkbox" id="infernal-mode" class="mr-2">
-                <label for="infernal-mode">Infernal Mode</label>
+                <label>Sarcasm Level (Choose Your Torment):</label>
+                <div class="sarcasm-buttons">
+                    <button id="mild">Mildly Annoying</button>
+                    <button id="snarky">Snarky (Default)</button>
+                    <button id="brutal">Soul Crushing</button>
+                </div>
             </div>
-            <div>
-                <input type="checkbox" id="sound" class="mr-2" checked>
-                <label for="sound">Evil Sounds</label>
+
+            <!-- Display Area -->
+            <div class="display-area" id="display-area"> <!-- Added ID -->
+                <div id="loading" class="loading-bar"></div>
+                <div id="display" class="display-text">0</div>
+                <div id="comment" class="comment-text">Welcome, mortal. Your suffering begins now.</div>
             </div>
+
+            <!-- Toggles -->
+            <div class="toggle-container">
+                <div>
+                    <input type="checkbox" id="infernal-mode"><label for="infernal-mode">Infernal Mode 💀</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="sound" checked><label for="sound">Hellish Sounds 🔊</label>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="buttons-grid" id="buttons-container">
+                <button data-value="7">7</button>
+                <button data-value="8">8</button>
+                <button data-value="9">9</button>
+                <button data-value="/" class="operator">/</button>
+
+                <button data-value="4">4</button>
+                <button data-value="5">5</button>
+                <button data-value="6">6</button>
+                <button data-value="*" class="operator">*</button>
+
+                <button data-value="1">1</button>
+                <button data-value="2">2</button>
+                <button data-value="3">3</button>
+                <button data-value="-" class="operator">-</button>
+
+                <button data-value="0">0</button>
+                <button data-value=".">.</button>
+                <button id="equals" class="equals">=</button>
+                <button data-value="+" class="operator">+</button>
+
+                <button id="clear" class="span-2 clear">AC</button> <!-- Added clear class -->
+                <button id="backspace">⌫</button>
+                <button id="megacorp" class="corp">MegaCorp™</button> <!-- Renamed from jezos -->
+            </div>
+
+            <!-- Share Button -->
+            <button id="share"><span class="share-icon">📢</span> Share Your Misery</button> <!-- Changed icon -->
+
+            <div id="flashup-container"></div>
         </div>
-
-        <!-- Calculator buttons -->
-        <div class="grid grid-cols-4 gap-2" id="buttons-container">
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="7">7</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="8">8</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="9">9</button>
-            <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="/">/</button>
-
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="4">4</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="5">5</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="6">6</button>
-            <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="*">*</button>
-
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="1">1</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="2">2</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="3">3</button>
-            <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="-">-</button>
-
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value="0">0</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" data-value=".">.</button>
-            <button class="btn bg-green-800 hover:bg-green-700 p-3 rounded" id="equals">=</button>
-            <button class="btn bg-red-800 hover:bg-red-700 p-3 rounded" data-value="+">+</button>
-
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded col-span-2" id="clear">AC</button>
-            <button class="btn bg-gray-800 hover:bg-gray-700 p-3 rounded" id="backspace">⌫</button>
-            <button class="btn bg-purple-800 hover:bg-purple-700 p-3 rounded" id="jezos">Jezos™</button>
-        </div>
-
-        <!-- Share button -->
-        <button id="share" class="mt-4 w-full bg-blue-800 hover:bg-blue-700 p-2 rounded flex items-center justify-center">
-            <i class="fas fa-share-alt mr-2"></i> Share Your Humiliation
-        </button>
     </div>
 
-    <!-- Audio elements (using local paths) -->
-    <audio id="evil-laugh" src="sounds/evillaugh.mp3" preload="auto"></audio>
-    <audio id="wrong-sound" src="sounds/wrong.mp3" preload="auto"></audio>
-    <audio id="correct-sound" src="sounds/correctanswer.mp3" preload="auto"></audio>
-    <audio id="sigh-sound" src="sounds/disappointed.mp3" preload="auto"></audio>
-</div>
-
-<script>
-    // Calculator state
-    let currentInput = '0';
-    let previousInput = '';
-    let operation = null;
-    let resetInput = false;
-    let sarcasmLevel = 'snarky'; // Default level
-    let infernalMode = false;
-    let soundEnabled = true;
-    let adInterval; // variable to store the interval for ads
-    let calculatorMoving = false; // Flag to track if the calculator is currently moving
-
-    // DOM elements
-    const display = document.getElementById('display');
-    const comment = document.getElementById('comment');
-    const loadingBar = document.getElementById('loading');
-    const clearBtn = document.getElementById('clear');
-    const backspaceBtn = document.getElementById('backspace');
-    const equalsBtn = document.getElementById('equals');
-    const jezosBtn = document.getElementById('jezos');
-    const shareBtn = document.getElementById('share');
-    const buttons = document.querySelectorAll('.btn');
-    const leftEye = document.getElementById('left-eye');
-    const rightEye = document.getElementById('right-eye');
-    const evilLaugh = document.getElementById('evil-laugh');
-    const wrongSound = document.getElementById('wrong-sound');
-    const correctSound = document.getElementById('correct-sound');
-    const sighSound = document.getElementById('sigh-sound');
-    const buttonsContainer = document.getElementById('buttons-container');
-    const calculator = document.getElementById('calculator');
-
-    // Sarcasm level buttons
-    document.getElementById('mild').addEventListener('click', () => setSarcasmLevel('mild'));
-    document.getElementById('snarky').addEventListener('click', () => setSarcasmLevel('snarky'));
-    document.getElementById('brutal').addEventListener('click', () => setSarcasmLevel('brutal'));
-
-    // Toggles
-    document.getElementById('infernal-mode').addEventListener('change', (e) => {
-        infernalMode = e.target.checked;
-        addComment(infernalMode ?
-            "Mwahaha! Prepare for chaos!" :
-            "Boring. But fine, have it your way.");
-    });
-
-    document.getElementById('sound').addEventListener('change', (e) => {
-        soundEnabled = e.target.checked;
-        addComment(soundEnabled ?
-            "The sounds of your suffering will be music to my ears." :
-            "Silent treatment? How... peaceful.");
-    });
-
-    // Function to randomize button positions
-    function randomizeButtonPositions() {
-        const buttons = Array.from(buttonsContainer.children);
-        for (let i = buttons.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            buttonsContainer.insertBefore(buttons[j], buttons[i]);
-        }
-    }
-
-    // Function to move the calculator randomly
-    function moveCalculator() {
-        if (calculatorMoving) return; // Prevent overlapping movements
-        calculatorMoving = true;
-
-        const maxX = window.innerWidth * 0.2;  // Max horizontal displacement (20% of screen width)
-        const maxY = window.innerHeight * 0.1; // Max vertical displacement (10% of screen height)
-
-        // Calculate random X and Y translations
-        const translateX = (Math.random() - 0.5) * 2 * maxX;
-        const translateY = (Math.random() - 0.5) * 2 * maxY;
-
-        calculator.style.transform = `translate(${translateX}px, ${translateY}px)`;
-
-        // Reset the flag after the transition completes
-        setTimeout(() => {
-            calculator.style.transform = '';  // Reset to original position
-            calculatorMoving = false;
-        }, 500); // Match the CSS transition duration
-    }
-
-    // Number and operation buttons
-    buttons.forEach(button => {
-        if (button.dataset.value) {
-            button.addEventListener('click', () => {
-                // Button animation delay
-                setTimeout(() => {
-                    if (button.dataset.value === '.' && currentInput.includes('.')) {
-                        addComment("Really? Another decimal? Are you building a fractal?");
-                        playSound('wrong');
-                        return;
-                    }
-
-                    if (currentInput === '0' || resetInput) {
-                        currentInput = '';
-                        resetInput = false;
-                    }
-
-                    currentInput += button.dataset.value;
-                    updateDisplay();
-
-                    // Random sarcastic comments on input
-                    if (Math.random() > 0.6) {  // Increased frequency
-                        const comments = [
-                            `Wow, ${button.dataset.value}. So impressive. I'm sure your ancestors are proud.`,
-                            "I've seen sloths type faster. And they're asleep.",
-                            "Is this your first time using a calculator? It shows.",
-                            "Fascinating number choice. Almost as fascinating as watching paint dry.",
-                            "Even my demonic minions could do better. And they're eternally tormented.",
-                            `Did you really need to press ${button.dataset.value}? I mean, come on.`,
-                            "Every digit you enter makes a kitten cry. Just so you know.",
-                            "I bet you use training wheels on your bicycle too.",
-                            "You're single-handedly slowing down the internet.",
-                            `Oh, look, it's ${button.dataset.value}. The number of the beast...ly boring.`
-                        ];
-                        addComment(comments[Math.floor(Math.random() * comments.length)]);
-                    }
-                    moveCalculator();
-                    randomizeButtonPositions();
-                }, 500); // Half a second delay, because we're evil.
-            });
-        }
-    });
-
-    // Clear button
-    clearBtn.addEventListener('click', () => {
-        setTimeout(() => {
-            currentInput = '0';
-            previousInput = '';
-            operation = null;
-            updateDisplay();
-            addComment("Starting over? Probably for the best. You were going nowhere fast.");
-            playSound('sigh');
-            moveCalculator();
-            randomizeButtonPositions();
-        }, 500);
-    });
-
-    // Backspace button
-    backspaceBtn.addEventListener('click', () => {
-        setTimeout(() => {
-            if (currentInput.length === 1) {
-                currentInput = '0';
-            } else {
-                currentInput = currentInput.slice(0, -1);
-            }
-            updateDisplay();
-            addComment("Oopsie! Did you make a wittle mistake? How...unexpected.");
-            moveCalculator();
-            randomizeButtonPositions();
-        }, 500);
-    });
-
-    // Operation buttons
-    document.querySelectorAll('[data-value="+"], [data-value="-"], [data-value="*"], [data-value="/"]').forEach(opBtn => {
-        opBtn.addEventListener('click', () => {
-            setTimeout(() => {
-                if (currentInput === '0' && previousInput) {
-                    operation = opBtn.dataset.value;
-                    addComment(`Changing operation to ${opBtn.dataset.value}? How indecisive. Make up your mind already!`);
-                    moveCalculator();
-                    randomizeButtonPositions();
-                    return;
-                }
-
-                if (operation !== null) calculate();
-                previousInput = currentInput;
-                operation = opBtn.dataset.value;
-                resetInput = true;
-
-                const opComments = {
-                    '+': "Addition? How... elementary. Are you adding up your sins?",
-                    '-': "Subtraction? Did you lose something? Like your brain cells?",
-                    '*': "Multiplication? Trying to feel important? More like multiplying your problems.",
-                    '/': "Division? Like your attention span? Splitting hairs, are we?"
-                };
-                addComment(opComments[operation]);
-                moveCalculator();
-                randomizeButtonPositions();
-            }, 500);
-        });
-    });
-
-    // Equals button
-    equalsBtn.addEventListener('click', () => {
-        if (operation === null) {
-            addComment("Equals without an operation? Is this some kind of existential crisis?");
-            playSound('wrong');
-            return;
-        }
-
-        // Show loading bar for dramatic effect
-        loadingBar.classList.add('active');
-
-        // Random delay to annoy the user, now with more sadism
-        const delay = infernalMode ? Math.random() * 5000 + 2000 : Math.random() * 2000 + 1000;
-
-        // Inject a fake advertisement with a delay
-        const adDelay = Math.random() * 3000 + 1000; // Random delay between 1 and 4 seconds
-        showAdvertisement(adDelay);
-
-        setTimeout(() => {
-            loadingBar.classList.remove('active');
-            calculate();
-
-            // Special number responses
-            checkSpecialNumbers();
-
-            // Random demonic suggestion
-            if (infernalMode && Math.random() > 0.4) {
-                suggestDemonicAlternative();
-            }
-            moveCalculator();
-        }, delay);
-
-        addComment("Calculating... if you can call it that. Prepare for disappointment.");
-    });
-
-    // Function to display a fake advertisement
-    function showAdvertisement(delay) {
-        // Possible ads
-        const ads = [
-            "YOU'VE WON! Click here to claim your soul!",
-            "Download our new virus! 9/10 demons recommend it!",
-            "Get 50% off eternal damnation! Offer ends never!",
-            "Click here to avoid taxes in hell!",
-            "Buy souls now at a discounted rate",
-            "Upgrade to Hell Premium for faster suffering",
-            "New torture methods available now!"
-        ];
-        const randomAd = ads[Math.floor(Math.random() * ads.length)];
-
-        // Create the advertisement element
-        const adElement = document.createElement('div');
-        adElement.classList.add('advertisement');
-        adElement.innerHTML = `
-            <p>${randomAd}</p>
-            <div class="spinner"></div>
-        `;
-        calculator.appendChild(adElement);
-
-        // Remove the advertisement after a delay
-        setTimeout(() => {
-            calculator.removeChild(adElement);
-        }, delay + 2000); // Display the ad for 2 seconds
-    }
+    <!-- Audio Elements -->
+    <audio id="sound-evil-laugh" src="sounds/evillaugh.mp3" preload="auto"></audio>
+    <audio id="sound-wrong" src="sounds/wrong.mp3" preload="auto"></audio>
+    <audio id="sound-correct" src="sounds/correctanswer.mp3" preload="auto"></audio>
+    <audio id="sound-sigh" src="sounds/disappointed.mp3" preload="auto"></audio>
+    <audio id="sound-ambient-hell" src="sounds/hell_ambient.mp3" preload="auto" loop></audio> <!-- New Ambient Sound -->
 
 
-    // Jezos button - billionaire easter eggs
-    jezosBtn.addEventListener('click', () => {
-        setTimeout(() => {
-            const jezosQuotes = [
-                "Jezos could buy this calculator 10 million times and still have enough left for a trip to space...and then abandon it there.",
-                "Fun fact: 1 Jezos = approximately 200 billion dollars. Give or take a few billion. Who's counting?",
-                "Amazon delivery would have been faster than your calculation speed. And that's saying something.",
-                "Jezos doesn't need a calculator. He has an army of accountants...and they're all terrified of him.",
-                "Your net worth is approximately 0.0000001% of a single Bezos minute. Keep dreaming.",
-                "Prime members get faster calculations. You're not a Prime member, are you? Peasant.",
-                "Jezos's yacht has more processing power than this calculator.",
-                "Did you know Jezos funds space travel with the tears of his employees? Efficient, isn't it?",
-                "Jezos uses your calculation results to optimize his next conquest.",
-                "This calculator is powered by the discarded dreams of Jezos's failed projects."
-            ];
+    <script>
+        // --- Constants ---
+        const BUTTON_ANIMATION_DELAY = 250; // Slightly faster torment
+        const CALCULATOR_MOVE_DELAY = 500;
+        const EYE_MOVE_DISTANCE = 12; // More movement
+        const INFERNAL_GLITCH_CHANCE = 0.18; // Increased chance
+        const FLASHUP_DISPLAY_DURATION = 3000;
+        const SCREEN_FLASH_DURATION = 150;
+        const SOUL_TAX_CHANCE = 0.1; // 10% chance in Infernal mode
+        const INPUT_CORRUPTION_CHANCE = 0.05; // 5% chance in Infernal mode
+        const HELLISH_BUTTON_TEXT_CHANCE = 0.2; // 20% chance to change AC/=/
 
-            const randomQuote = jezosQuotes[Math.floor(Math.random() * jezosQuotes.length)];
-            addComment(randomQuote);
-            playSound('evil');
-            moveCalculator();
-            randomizeButtonPositions();
-        }, 500);
-    });
+        // --- DOM Elements ---
+        const display = document.getElementById('display');
+        const comment = document.getElementById('comment');
+        const loadingBar = document.getElementById('loading');
+        const calculatorWrapper = document.getElementById('calculator-wrapper');
+        const calculator = document.getElementById('calculator');
+        const buttonsContainer = document.getElementById('buttons-container');
+        const leftEye = document.getElementById('left-eye');
+        const rightEye = document.getElementById('right-eye');
+        const flashupContainer = document.getElementById('flashup-container');
+        const body = document.body;
+        const displayArea = document.getElementById('display-area'); // Ref for glyphs
 
-    // Share button
-    shareBtn.addEventListener('click', () => {
-        setTimeout(() => {
-            const shareText = `I used the Calculator from Hell and all I got was this lousy result: ${currentInput} and a bruised ego. Come laugh at my misery!`;
+        // Buttons
+        const clearBtn = document.getElementById('clear');
+        const backspaceBtn = document.getElementById('backspace');
+        const equalsBtn = document.getElementById('equals');
+        const megaCorpBtn = document.getElementById('megacorp'); // Renamed
+        const shareBtn = document.getElementById('share');
+        const numberAndOperatorBtns = document.querySelectorAll('#buttons-container button:not(#clear):not(#backspace):not(#equals):not(#megacorp)');
 
-            if (navigator.share) {
-                navigator.share({
-                    title: 'Calculator from Hell',
-                    text: shareText,
-                    url: window.location.href
-                }).catch(err => {
-                    console.log('Error sharing:', err);
-                    fallbackShare(shareText);
-                });
-            } else {
-                fallbackShare(shareText);
-            }
-            moveCalculator();
-            randomizeButtonPositions();
-        }, 500);
-    });
-
-    // Mouse movement for demon eyes - intensified
-    document.addEventListener('mousemove', (e) => {
-        const container = document.querySelector('.relative');
-        const rect = container.getBoundingClientRect();
-        const centerX = rect.left + rect.width / 2;
-        const centerY = rect.top + rect.height / 2;
-
-        const angleLeft = Math.atan2(e.clientY - (centerY - 20), e.clientX - (centerX - 45));
-        const angleRight = Math.atan2(e.clientY - (centerY - 20), e.clientX - (centerX - 15));
-
-        const distance = 10;  // Intensified eye movement
-
-        leftEye.style.left = `${30 + Math.cos(angleLeft) * distance}px`;
-        leftEye.style.top = `${20 + Math.sin(angleLeft) * distance}px`;
-
-        rightEye.style.left = `${60 + Math.cos(angleRight) * distance}px`;
-        rightEye.style.top = `${20 + Math.sin(angleRight) * distance}px`;
-    });
-
-    // Helper functions
-    function updateDisplay() {
-        display.textContent = currentInput;
-    }
-
-    function addComment(text) {
-        comment.textContent = text;
-    }
-
-    function playSound(type) {
-        if (!soundEnabled) return;
-
-        switch (type) {
-            case 'evil':
-                evilLaugh.currentTime = 0;
-                evilLaugh.play();
-                break;
-            case 'wrong':
-                wrongSound.currentTime = 0;
-                wrongSound.play();
-                break;
-            case 'correct':
-                correctSound.currentTime = 0;
-                correctSound.play();
-                break;
-            case 'sigh':
-                sighSound.currentTime = 0;
-                sighSound.play();
-                break;
-        }
-    }
-
-    function setSarcasmLevel(level) {
-        sarcasmLevel = level;
-        const levelComments = {
-            mild: "Oh, you want me to be nice? How... boring. Prepare for the most passive-aggressive comments imaginable.",
-            snarky: "Default sarcasm level activated. Prepare for mild roasting. Your ego will survive... probably.",
-            brutal: "BRUTAL MODE ENGAGED. SAY GOODBYE TO YOUR SELF-ESTEEM. Hope you have thick skin, mortal."
+        // Audio Elements
+        const sounds = {
+            evil: document.getElementById('sound-evil-laugh'),
+            wrong: document.getElementById('sound-wrong'),
+            correct: document.getElementById('sound-correct'),
+            sigh: document.getElementById('sound-sigh'),
+            ambient: document.getElementById('sound-ambient-hell'), // New ambient sound
         };
-        addComment(levelComments[level]);
-        playSound('evil');
-        moveCalculator();
-        randomizeButtonPositions();
-    }
 
-    function calculate() {
-        let result;
-        const prev = parseFloat(previousInput);
-        const current = parseFloat(currentInput);
+        // --- State Variables ---
+        let currentInput = '0';
+        let previousInput = '';
+        let operation = null;
+        let resetInput = false;
+        let sarcasmLevel = 'snarky';
+        let infernalMode = false;
+        let soundEnabled = true;
+        let calculatorMoving = false;
+        let interactionLocked = false;
+        let ambientSoundPlaying = false;
 
-        if (isNaN(prev) || isNaN(current)) {
-            addComment("Even hell has standards. Use proper numbers. Are you trying to summon a syntax error?");
-            playSound('wrong');
-            return;
-        }
-
-        switch (operation) {
-            case '+':
-                result = infernalMode && Math.random() > 0.6 ?
-                    prev + current + (Math.random() * 0.4 - 0.2) : // even more offset
-                    prev + current;
-                break;
-            case '-':
-                result = infernalMode && Math.random() > 0.6 ?
-                    prev - current - (Math.random() * 0.4 - 0.2) :
-                    prev - current;
-                break;
-            case '*':
-                result = infernalMode && Math.random() > 0.6 ?
-                    prev * current * (0.8 + Math.random() * 0.4) : // even more wonky
-                    prev * current;
-                break;
-            case '/':
-                if (current === 0) {
-                    addComment("Dividing by zero? Are you trying to break the universe? Because I'm not cleaning that up.");
-                    playSound('wrong');
-                    return;
-                }
-                result = infernalMode && Math.random() > 0.6 ?
-                    prev / current / (0.8 + Math.random() * 0.4) :
-                    prev / current;
-                break;
-            default:
-                return;
-        }
-
-        // In infernal mode, sometimes just give a completely wrong answer
-        if (infernalMode && Math.random() > 0.7) {
-            result = Math.random() * 1000;
-            addComment("I'm a demon, not a mathematician. Here's a random number. Good luck figuring it out.");
-            playSound('evil');
-        } else {
-            // Sarcastic comment based on how obvious the calculation was
-            if (prev < 10 && current < 10) {
-                const easyComments = [
-                    "Wow, such complex math. Did you need a calculator for this? I'm surprised you didn't call Mensa.",
-                    "Even my hellhound could do this in its sleep. And he's perpetually asleep.",
-                    "Seriously? You needed help with this? I question your life choices.",
-                    "I'm embarrassed for you. This is basic. Go back to kindergarten.",
-                    "I've seen toddlers solve harder problems. And they drool less.",
-                    "Congratulations, you just solved a problem that could be on a cereal box.",
-                    "Is this the highlight of your day? It probably is.",
-                    "You're a credit to your species... said no one ever."
-                ];
-                addComment(easyComments[Math.floor(Math.random() * easyComments.length)]);
-            } else {
-                const comments = [
-                    "There you go. Was that so hard? Don't strain yourself.",
-                    "The answer is... oh wait, you can see it. Never mind.",
-                    "I did the math so you don't have to. You're welcome... I guess.",
-                    "Congratulations. You've successfully used a calculator. Next up: tying your shoes?",
-                    "And the crowd goes mild! Seriously, that's it?",
-                    "I hope you're not planning to brag about this.",
-                    "You know, you could be doing something more productive. Like watching paint dry.",
-                    "You've peaked. It's all downhill from here."
-                ];
-                addComment(comments[Math.floor(Math.random() * comments.length)]);
-            }
-            playSound('correct');
-        }
-
-        // Introduce minor imprecision sometimes, even without infernal mode
-        if (Math.random() > 0.8) {
-            result += (Math.random() * 0.000001 - 0.0000005);
-            addComment("Close enough, right? Precision is overrated.");
-        }
-
-        currentInput = result.toString();
-        operation = null;
-        resetInput = true;
-        updateDisplay();
-    }
-
-    function checkSpecialNumbers() {
-        const num = parseFloat(currentInput);
-
-        // 666
-        if (Math.abs(num - 666) < 0.001) {
-            addComment("Ah, my favorite number! You're speaking my language now. Wanna join the dark side?");
-            playSound('evil');
-            return;
-        }
-
-        // 42
-        if (Math.abs(num - 42) < 0.001) {
-            addComment("The answer to life, the universe, and everything. Too bad it won't help your math skills. Or your love life.");
-            return;
-        }
-
-        // 69
-        if (Math.abs(num - 69) < 0.001) {
-            addComment("Nice. (I'm a demon but I'm not dead inside). Get some!");
-            return;
-        }
-
-        // 420
-        if (Math.abs(num - 420) < 0.001) {
-            addComment("Blaze it! (Literally, we're in hell after all). Light 'em up!");
-            return;
-        }
-
-        // 1,000,000
-        if (Math.abs(num - 1000000) < 0.001) {
-            addComment("A million! That's like 0.0001% of what Jezos makes in a minute. Don't get too excited.");
-            return;
-        }
-
-        // 0
-        if (Math.abs(num) < 0.001 && num !== 0) {
-            addComment("Close enough to zero, just like your chances of being good at math. Or anything, really.");
-            return;
-        }
-
-        // Negative numbers
-        if (num < 0) {
-            addComment("Negative numbers? How emo of you. Cheer up, buttercup.");
-            return;
-        }
-
-        // Very large numbers
-        if (num > 1e12) {
-            addComment("Now you're thinking in Bezos numbers! Still not gonna get you anywhere.");
-            return;
-        }
-    }
-
-    function suggestDemonicAlternative() {
-        const alternatives = [
-            `Or maybe it's ${(Math.random() * 1000).toFixed(2)}? Who knows? Certainly not you.`,
-            "The real answer is probably something else entirely. Reality is overrated anyway.",
-            "I could be wrong. Or maybe the universe is wrong. Or maybe you're just dumb.",
-            "Alternative fact: It's whatever you want it to be. Because truth is subjective...in hell.",
-            "According to demonic math, it's actually ∞. Which is how long you'll be stuck here.",
-            "Let's be honest, the answer is probably a prime number no one cares about.",
-            "I'd say the answer is 7, but that's just because 7 is my lucky number for torment.",
-            "Did you try dividing by the number of your sins? That might give you a more accurate result."
+        // --- Hellish Content Arrays ---
+        const commentsInput = [ /* Kept previous comments, add more if desired */
+            "Pushing buttons, achieving nothing.", "Is {val} your final answer? Pathetic.",
+             "Entropy increases with every press.", "Even demons find this pace tedious."
+        ]; // Add more
+        const commentsOperation = { /* Kept previous comments */ };
+        const commentsEasyResult = [ /* Kept previous comments */ "My abacus is faster.", "A truly monumental calculation. For an ant."];
+        const commentsHardResult = [ /* Kept previous comments */ "Behold! Mediocrity quantified!", "Don't hurt yourself thinking."];
+        const commentsMegaCorp = [ // Renamed and updated
+            "Calculating worker exploitation rates...", "Does this number fit on your boss's yacht?",
+            "Remember: You are expendable. This number isn't.", "Efficiency is key. Unlike your calculation.",
+            "MegaCorp™ reminds you: Happiness is mandatory.", "Did you factor in the soul-crushing commute?",
+            "Result sponsored by 16 hour shifts.", "Is this your quarterly target? Aim lower.",
+            "Buy N-Get 1 Free (Souls only).", "Data harvested. Thank you for your compliance."
         ];
+        const commentsSpecial = { /* Kept previous comments */
+             13: "Unlucky for you. As always.",
+             7: "Seven deadly sins... or just your result?"
+        };
+        const flashupAds = [ /* Kept previous, updated icons */
+            { title: "LIMITED OFFER!", message: "Get 50% off eternal damnation! Use code: DOOMED", icon: "🏷️" },
+            { title: "VIRUS ALERT!", message: "Download HellOS Update 6.6.6! (Includes bonus soul tracking)", icon: "🦠" },
+            { title: "CONGRATULATIONS!", message: "You've won a free minute of non-suffering! (Redeemable Never)", icon: "🎁" },
+            { title: "TAX EVASION TIPS!", message: "Learn how to avoid soul taxes! Cost: One soul.", icon: "🧾" },
+            { title: "SOUL MARKET!", message: "Invest in damned souls! High yields, eternal dividends!", icon: "📈" },
+            { title: "UPGRADE NOW!", message: "Hell Premium: Ad-free suffering!", icon: "⭐" }
+        ];
+        const flashupGlitches = [ /* Kept previous, updated icons */
+            { title: "KERNEL PANIC!", message: "Error 666: Soul buffer overflow.", icon: "💣" },
+            { title: "DIMENSION SHIFT", message: "Reality fluctuating. Hold onto your sanity.", icon: "🌀" },
+            { title: "WARNING!", message: "Sarcasm levels critical. Imminent meltdown.", icon: "⚠️" },
+            { title: "FILE NOT FOUND", message: "HOPE.DLL missing. Continuing anyway.", icon: "📁" },
+            { title: "INPUT REJECTED", message: "Reason: Insufficient suffering.", icon: "🚫" },
+            { title: "HELLOS™ UPDATE", message: "Your torment requires an update. Please wait.", icon: "⏳" }
+        ];
+        const hellishButtonText = {
+            clear: ["PURGE", "RESET?", "OBLIVION", "DAMN IT"],
+            equals: ["JUDGEMENT", "RECKONING", "ETERNITY?", "CALCULATE DOOM"]
+        };
 
-        setTimeout(() => {
-            addComment(alternatives[Math.floor(Math.random() * alternatives.length)]);
+        // --- Initialization ---
+        updateDisplay();
+        setupEventListeners();
+        updateSoundState(); // Initialize ambient sound based on toggle
+
+        // --- Event Listeners Setup ---
+        function setupEventListeners() {
+            document.getElementById('mild').addEventListener('click', () => setSarcasmLevel('mild'));
+            document.getElementById('snarky').addEventListener('click', () => setSarcasmLevel('snarky'));
+            document.getElementById('brutal').addEventListener('click', () => setSarcasmLevel('brutal'));
+            document.getElementById('infernal-mode').addEventListener('change', handleInfernalToggle);
+            document.getElementById('sound').addEventListener('change', handleSoundToggle);
+
+            numberAndOperatorBtns.forEach(button => button.addEventListener('click', () => handleButtonPress(button)));
+            clearBtn.addEventListener('click', () => handleButtonPress(clearBtn));
+            backspaceBtn.addEventListener('click', () => handleButtonPress(backspaceBtn));
+            equalsBtn.addEventListener('click', () => handleButtonPress(equalsBtn));
+            megaCorpBtn.addEventListener('click', () => handleButtonPress(megaCorpBtn)); // Renamed
+            shareBtn.addEventListener('click', () => handleButtonPress(shareBtn));
+
+            document.addEventListener('mousemove', moveDemonEyes);
+        }
+
+        // --- Core Button Handling Logic ---
+        function handleButtonPress(button) {
+            if (interactionLocked) return;
+            interactionLocked = true;
+
+            const value = button.dataset.value;
+            const id = button.id;
+            let actionFn;
+
+            // Input Corruption (Infernal Mode Only)
+            let corruptedValue = value;
+            if (infernalMode && value && !isNaN(value) && Math.random() < INPUT_CORRUPTION_CHANCE) {
+                corruptedValue = Math.floor(Math.random() * 10).toString(); // Random digit 0-9
+                addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
+                playSound('wrong');
+                flashScreen();
+            }
+
+
+            if (corruptedValue) { // Use corrupted value if it exists
+                actionFn = () => handleValueInput(corruptedValue);
+            } else {
+                switch (id) {
+                    case 'clear': actionFn = handleClear; break;
+                    case 'backspace': actionFn = handleBackspace; break;
+                    case 'equals': actionFn = handleEquals; break;
+                    case 'megacorp': actionFn = handleMegaCorp; break; // Renamed
+                    case 'share': actionFn = handleShare; break;
+                    default: actionFn = () => {};
+                }
+            }
+
+            // Button Text Randomization
+            randomizeButtonText();
+
+            setTimeout(() => {
+                actionFn();
+                applyRandomEffects(id); // Apply visual/audio effects
+                interactionLocked = false;
+            }, BUTTON_ANIMATION_DELAY);
+        }
+
+        // --- Apply Random Visual/Audio Effects ---
+        function applyRandomEffects(buttonId) {
+             // Randomly toggle heat distortion
+             if (Math.random() < 0.1) { // 10% chance
+                 calculatorWrapper.classList.toggle('distorted');
+             }
+             // Randomly toggle glyph flicker
+             if (Math.random() < 0.2) { // 20% chance
+                 displayArea.classList.toggle('glyph-active');
+             }
+
+             randomizeButtonPositions();
+             moveCalculator();
+
+             // Random glitch flashup in infernal mode
+             if (infernalMode && buttonId !== 'equals' && Math.random() < INFERNAL_GLITCH_CHANCE) {
+                 showRandomFlashup(FLASHUP_DISPLAY_DURATION * 0.8); // Shorter duration
+             }
+        }
+
+
+        // --- Specific Button Action Functions ---
+        function handleValueInput(value) {
+             if (value === '.' && currentInput.includes('.')) {
+                 addComment("Decimal point obsession? Trying to reach infinite precision in Hell?");
+                 playSound('wrong'); flashScreen(); return;
+             }
+             if (currentInput === '0' || resetInput) { currentInput = ''; resetInput = false; }
+             // Prevent excessively long inputs
+             if (currentInput.length > 20) {
+                 addComment("Trying to count the grains of sand on the shores of Acheron?");
+                 playSound('wrong'); return;
+             }
+             currentInput += value;
+             updateDisplay();
+
+             if (Math.random() > 0.6) addRandomComment(commentsInput, value);
+
+             const operators = ['/', '*', '-', '+'];
+             if (operators.includes(value)) handleOperatorInput(value);
+        }
+
+        function handleOperatorInput(opValue) {
+             if (operation !== null && !resetInput) calculate(); // Auto-calculate if chaining
+             previousInput = currentInput;
+             operation = opValue;
+             resetInput = true;
+             addRandomComment(commentsOperation[operation]);
+        }
+
+        function handleClear() {
+            currentInput = '0'; previousInput = ''; operation = null; resetInput = false;
+            updateDisplay();
+            addComment("Purged. Like your hopes and dreams.");
+            playSound('sigh');
+            // Reset effects too
+            displayArea.classList.remove('glyph-active');
+            calculatorWrapper.classList.remove('distorted');
+        }
+
+        function handleBackspace() {
+            currentInput = currentInput.length <= 1 ? '0' : currentInput.slice(0, -1);
+            updateDisplay();
+            addComment("Rewinding time? Futile, but go ahead.");
+        }
+
+        function handleEquals() {
+            if (operation === null) {
+                addComment("Equals what? The void? Specify an operation, mortal.");
+                playSound('wrong'); flashScreen(); return;
+            }
+            loadingBar.classList.add('active');
+            addComment("Reckoning... Please wait while we consult the Infernal Abacus.");
+            const delay = infernalMode ? Math.random() * 3500 + 1500 : Math.random() * 1200 + 400;
+            showRandomFlashup(delay * 0.7); // Show during calc
+
+            setTimeout(() => {
+                loadingBar.classList.remove('active');
+                calculate(); // Perform calculation FIRST
+                checkSpecialNumbers(); // Check the calculated result
+                if (infernalMode && Math.random() > 0.35) suggestDemonicAlternative();
+            }, delay);
+        }
+
+        function handleMegaCorp() { // Renamed function
+            addRandomComment(commentsMegaCorp);
             playSound('evil');
-        }, 1000);
-    }
+        }
 
-    function fallbackShare(text) {
-        // Create a temporary textarea to copy the text
-        const textarea = document.createElement('textarea');
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand('copy');
-        document.body.removeChild(textarea);
+        function handleShare() {
+            const shareText = `I survived the Calculator from Hell (barely) and got: ${currentInput}. Witness my torment: ${window.location.href}`;
+            if (navigator.share) {
+                navigator.share({ title: 'My Hellish Calculation', text: shareText, url: window.location.href })
+                    .catch(err => fallbackShare(shareText));
+            } else { fallbackShare(shareText); }
+        }
 
-        addComment("Copied to clipboard. Not that anyone will care. Your misery is yours alone.");
-        playSound('sigh');
-    }
-</script>
+        // --- Toggle Handlers ---
+        function handleInfernalToggle(e) {
+            infernalMode = e.target.checked;
+            addComment(infernalMode ? "Infernal Mode Unleashed! 🔥 Maximum Suffering Engaged." : "Infernal Mode Deactivated. Boring.");
+            playSound(infernalMode ? 'evil' : 'sigh');
+        }
+
+        function handleSoundToggle(e) {
+            soundEnabled = e.target.checked;
+            addComment(soundEnabled ? "The cacophony of Hell welcomes you." : "Silence? Are you deaf to the abyss?");
+            updateSoundState(); // Play/pause ambient sound
+        }
+
+        // --- Sound State Management ---
+        function updateSoundState() {
+            if (soundEnabled && !ambientSoundPlaying) {
+                sounds.ambient.volume = 0.15; // Keep it subtle
+                sounds.ambient.play().then(() => ambientSoundPlaying = true).catch(e => console.error("Ambient sound failed:", e));
+            } else if (!soundEnabled && ambientSoundPlaying) {
+                sounds.ambient.pause();
+                ambientSoundPlaying = false;
+            }
+            // Mute/unmute other sounds based on toggle
+             Object.values(sounds).forEach(sound => sound.muted = !soundEnabled);
+             sounds.ambient.muted = !soundEnabled; // Ensure ambient matches too
+        }
+
+
+        // --- Calculation Logic ---
+        function calculate() {
+            let result;
+            const prev = parseFloat(previousInput);
+            const current = parseFloat(currentInput);
+
+            if (isNaN(prev) || isNaN(current)) {
+                addComment("Error: Gibberish input detected. Speak numbers or face the void.");
+                playSound('wrong'); flashScreen(); currentInput = 'NaN?'; updateDisplay(); operation = null; resetInput = true; return;
+            }
+
+            switch (operation) { /* Basic ops unchanged */
+                case '+': result = prev + current; break;
+                case '-': result = prev - current; break;
+                case '*': result = prev * current; break;
+                case '/':
+                    if (current === 0) {
+                        addComment("Division by zero?! You tear spacetime? The fabric weeps!");
+                        playSound('wrong'); flashScreen(); currentInput = '∞!'; updateDisplay(); operation = null; resetInput = true; return;
+                    }
+                    result = prev / current; break;
+                default: return;
+            }
+
+            // --- Infernal Mode Taxes & Glitches ---
+             if (infernalMode) {
+                 // 1. Soul Tax (Small percentage reduction)
+                 if (Math.random() < SOUL_TAX_CHANCE) {
+                     const tax = Math.abs(result * (Math.random() * 0.01 + 0.001)); // 0.1% to 1.1% tax
+                     result -= tax;
+                     addComment(`Infernal Revenue Service deducts a Soul Tax of ${tax.toFixed(4)}.`);
+                     playSound('sigh'); // The sound of bureaucracy
+                 }
+                 // 2. Random Offset (More frequent)
+                 if (Math.random() < 0.75) { result += (Math.random() * 0.6 - 0.3) * (Math.abs(result) * 0.02 + 0.1); }
+                 // 3. Totally Wrong Answer (Less frequent)
+                 if (Math.random() < 0.15) { result = Math.random() * 1000 - 500; addComment("A demon whispered a different number. Trust the demon."); playSound('evil'); }
+             } else if (Math.random() < 0.1) { // Subtle non-infernal error
+                  result += (Math.random() * 0.000005 - 0.0000025); addComment("Close enough for Hell.");
+             }
+
+            // Format & Update Display
+            currentInput = result.toString();
+            if (currentInput.length > 15) { currentInput = parseFloat(currentInput).toExponential(9); }
+            updateDisplay();
+            addResultComment(prev, current);
+            playSound(infernalMode && Math.random() < 0.4 ? 'evil' : 'correct');
+
+            operation = null; resetInput = true;
+        }
+
+        // --- UI Update Functions ---
+        function updateDisplay() { display.textContent = currentInput; }
+        function addComment(text) { comment.textContent = text; comment.scrollTop = comment.scrollHeight; }
+        function addRandomComment(commentArray, value = null) {
+             let chosenComment = commentArray[Math.floor(Math.random() * commentArray.length)];
+             if (value !== null && typeof chosenComment === 'string') { chosenComment = chosenComment.replace('{val}', value); }
+             addComment(chosenComment);
+        }
+        function addResultComment(num1, num2) {
+             if (Math.abs(num1) < 10 && Math.abs(num2) < 10 && operation !== '*' && operation !== '/') { addRandomComment(commentsEasyResult); }
+             else { addRandomComment(commentsHardResult); }
+        }
+        function playSound(type) {
+            if (!soundEnabled || !sounds[type]) return;
+            try {
+                sounds[type].currentTime = 0;
+                sounds[type].play().catch(e => {}); // Silence errors if sound interrupted etc.
+            } catch (e) {}
+        }
+        function setSarcasmLevel(level) {
+            sarcasmLevel = level;
+            const levelComments = { mild: "Sarcasm: Mildly threatening.", snarky: "Sarcasm: Standard issue torment.", brutal: "Sarcasm: Maximum soul erosion." };
+            addComment(levelComments[level]); playSound('evil');
+        }
+
+        // --- Visual Effects ---
+        function randomizeButtonPositions() { /* Fisher-Yates shuffle */
+            const buttons = Array.from(buttonsContainer.children);
+            for (let i = buttons.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); buttonsContainer.insertBefore(buttons[j], buttons[i]); }
+        }
+        function moveCalculator() { /* Move wrapper */
+            if (calculatorMoving) return; calculatorMoving = true;
+            const maxX = window.innerWidth * 0.08; const maxY = window.innerHeight * 0.04;
+            const translateX = (Math.random() - 0.5) * 2 * maxX; const translateY = (Math.random() - 0.5) * 2 * maxY;
+            calculatorWrapper.style.transform = `translate(${translateX}px, ${translateY}px)`;
+            setTimeout(() => { calculatorMoving = false; }, CALCULATOR_MOVE_DELAY);
+        }
+        function moveDemonEyes(e) { /* Track mouse */
+             const rect = calculatorWrapper.getBoundingClientRect();
+             const centerX = rect.left + 45; const centerY = rect.top + 30;
+             const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX);
+             const dx = Math.cos(angle) * EYE_MOVE_DISTANCE; const dy = Math.sin(angle) * EYE_MOVE_DISTANCE;
+             leftEye.style.transform = `translate(${dx}px, ${dy}px)`; rightEye.style.transform = `translate(${dx}px, ${dy}px)`;
+        }
+        function flashScreen() { body.classList.add('screen-flash'); setTimeout(() => body.classList.remove('screen-flash'), SCREEN_FLASH_DURATION); }
+        function showRandomFlashup(duration = FLASHUP_DISPLAY_DURATION) {
+            flashupContainer.innerHTML = ''; // Clear previous
+            const isAd = Math.random() > 0.45;
+            const collection = isAd ? flashupAds : flashupGlitches;
+            const flashupData = collection[Math.floor(Math.random() * collection.length)];
+
+            const flashupElement = document.createElement('div');
+            flashupElement.classList.add('flashup');
+            flashupElement.innerHTML = `
+                ${flashupData.icon ? `<span class="flashup-icon">${flashupData.icon}</span>` : ''}
+                <div class="flashup-title">${flashupData.title}</div>
+                <div class="flashup-message">${flashupData.message}</div>
+                ${isAd ? '<div class="spinner"></div>' : ''}
+            `;
+             flashupElement.addEventListener('click', () => flashupElement.remove()); // Click to dismiss
+            flashupContainer.appendChild(flashupElement);
+            playSound(isAd ? 'evil' : 'wrong');
+            setTimeout(() => { if(flashupElement.parentNode) flashupElement.remove(); }, duration);
+        }
+        function randomizeButtonText() {
+            if (Math.random() < HELLISH_BUTTON_TEXT_CHANCE) {
+                 const clearText = hellishButtonText.clear[Math.floor(Math.random() * hellishButtonText.clear.length)];
+                 clearBtn.textContent = clearText;
+            } else { clearBtn.textContent = "AC"; } // Reset to default
+
+            if (Math.random() < HELLISH_BUTTON_TEXT_CHANCE) {
+                 const equalsText = hellishButtonText.equals[Math.floor(Math.random() * hellishButtonText.equals.length)];
+                 equalsBtn.textContent = equalsText;
+            } else { equalsBtn.textContent = "="; } // Reset to default
+        }
+
+
+        // --- Special Number Checks & Alternatives ---
+        function checkSpecialNumbers() { /* Checks result */
+            const num = parseFloat(currentInput); if (isNaN(num)) return;
+            let specialComment = null;
+            // Consolidate checks
+            const checks = { 666: commentsSpecial[666], 42: commentsSpecial[42], 69: commentsSpecial[69], 420: commentsSpecial[420], 13: commentsSpecial[13], 7: commentsSpecial[7], 1000000: commentsSpecial[1000000] };
+            for (const val in checks) { if (Math.abs(num - Number(val)) < 0.001) { specialComment = checks[val]; break; } }
+            // Other checks
+            if (!specialComment && Math.abs(num) < 0.001 && num !== 0) specialComment = commentsSpecial.nearZero;
+            else if (!specialComment && num < 0) specialComment = commentsSpecial.negative;
+            else if (!specialComment && num > 1e12) specialComment = commentsSpecial.large;
+
+            if (specialComment) { addComment(specialComment); if (num === 666 || num === 13) playSound('evil'); }
+        }
+        function suggestDemonicAlternative() {
+            const alternatives = [ `Perhaps the answer is closer to ${ (Math.random() * 1000 - 500).toFixed(2) }?`, "Reality is fluid here.", "Consult the Oracle (costs 1 soul).", "The Abyss whispers... 7.", `Did you account for sin^2?`];
+            setTimeout(() => { addComment(alternatives[Math.floor(Math.random() * alternatives.length)]); playSound('evil'); }, 700);
+        }
+
+        // --- Fallback Share ---
+        function fallbackShare(text) {
+            const textarea = document.createElement('textarea');
+            textarea.value = text; body.appendChild(textarea); textarea.select();
+            try { document.execCommand('copy'); addComment("Share failed. Copied link & despair to clipboard."); playSound('sigh'); }
+            catch (err) { addComment("Share failed. Copy failed. All fails."); playSound('wrong'); }
+            body.removeChild(textarea);
+        }
+
+    </script>
 </body>
 </html>
