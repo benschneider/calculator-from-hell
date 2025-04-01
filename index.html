@@ -328,11 +328,11 @@
         const shareBtn = document.getElementById('share');
         const numberAndOperatorBtns = document.querySelectorAll('#buttons-container button:not(#clear):not(#backspace):not(#equals):not(#megacorp)');
         const commentsOperation = {
-                                    '+': ["Addition? Really stretching your limits there.", "More? Always more with you.", "Adding things won’t fill the void."],
-                                    '-': ["Subtraction? Trying to make yourself smaller?", "Taking things away, like your motivation?", "Subtracting... your dignity."],
-                                    '*': ["Multiplying? Someone thinks they're fancy.", "Exponential disappointment incoming.", "Don't get too carried away now."],
-                                    '/': ["Division? Dividing what’s already broken?", "Splitting hairs, are we?", "Divide and... flail."]
-                                };
+            '+': ["Addition? Really stretching your limits there.", "More? Always more with you.", "Adding things won’t fill the void."],
+            '-': ["Subtraction? Trying to make yourself smaller?", "Taking things away, like your motivation?", "Subtracting... your dignity."],
+            '*': ["Multiplying? Someone thinks they're fancy.", "Exponential disappointment incoming.", "Don't get too carried away now."],
+            '/': ["Division? Dividing what’s already broken?", "Splitting hairs, are we?", "Divide and... flail."]
+        };
         // Audio Elements
         const sounds = {
             evil: document.getElementById('sound-evil-laugh'),
@@ -359,7 +359,7 @@
             "Pushing buttons, achieving nothing.", "Is {val} your final answer? Pathetic.",
              "Entropy increases with every press.", "Even demons find this pace tedious."
         ]; // Add more
-        // const commentsOperation = { /* Kept previous comments */ };
+        
         const commentsEasyResult = [ /* Kept previous comments */ "My abacus is faster.", "A truly monumental calculation. For an ant."];
         const commentsHardResult = [ /* Kept previous comments */ "Behold! Mediocrity quantified!", "Don't hurt yourself thinking."];
         const commentsMegaCorp = [ // Renamed and updated
