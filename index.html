@@ -349,7 +349,7 @@
         let resetInput = false;
         let sarcasmLevel = 'snarky';
         let infernalMode = false;
-        let soundEnabled = false;
+        let soundEnabled = true;
         let calculatorMoving = false;
         let interactionLocked = false;
         let ambientSoundPlaying = false;
@@ -399,6 +399,11 @@
         setupEventListeners();
         updateSoundState(); // Initialize ambient sound based on toggle
 
+        setTimeout(() => {
+            if (!ambientSoundPlaying) {
+                addComment("Click anywhere to unlock the ambient torment.");
+            }
+        }, 1500);
         // --- Event Listeners Setup ---
         function setupEventListeners() {
             document.getElementById('mild').addEventListener('click', () => setSarcasmLevel('mild'));
