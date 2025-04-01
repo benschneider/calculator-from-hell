@@ -36,6 +36,20 @@
     to { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
+@keyframes glitchText {
+    0% { text-shadow: 2px 0 red, -2px 0 cyan; }
+    20% { text-shadow: -2px 0 red, 2px 0 cyan; }
+    40% { text-shadow: 1px -1px red, -1px 1px cyan; }
+    60% { text-shadow: -1px 1px red, 1px -1px cyan; }
+    80% { text-shadow: 2px 2px red, -2px -2px cyan; }
+    100% { text-shadow: 0 0 red, 0 0 cyan; }
+}
+
+@keyframes powerSurge {
+    0%, 100% { background-color: black; }
+    50% { background-color: #330000; }
+}
+
 /* --- Layout & Theme --- */
 body {
     background-color: black;
@@ -206,6 +220,10 @@ body {
     grid-column: span 2;
 }
 
+.button-smudge:hover {
+    filter: blur(0.5px) contrast(1.2);
+}
+
 /* --- Share Button --- */
 #share {
     background-color: #003366;
@@ -285,7 +303,16 @@ body {
     margin-top: 15px;
 }
 
+.glitching {
+    animation: glitchText 0.5s infinite alternate;
+}
+
+.power-surge {
+    animation: powerSurge 0.2s ease-in-out;
+}
+
 /* --- Screen Flash Effect --- */
 .screen-flash {
     background-color: #660000 !important;
 }
+

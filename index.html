@@ -255,7 +255,7 @@
 
             <!-- Buttons -->
             <div class="buttons-grid" id="buttons-container">
-                <button data-value="7">7</button>
+                <button class="button-smudge" data-value="7">7</button>
                 <button data-value="8">8</button>
                 <button data-value="9">9</button>
                 <button data-value="/" class="operator">/</button>
@@ -716,10 +716,29 @@
                 <div class="flashup-message">${flashupData.message}</div>
                 ${isAd ? '<div class="spinner"></div>' : ''}
             `;
-             flashupElement.addEventListener('click', () => flashupElement.remove()); // Click to dismiss
+
+            const dismissButton = document.createElement('button');
+            dismissButton.textContent = 'X';
+            dismissButton.classList.add('flashup-dismiss');
+            flashupElement.appendChild(dismissButton);
+
+            let dismissCount = 0;
+            dismissButton.addEventListener('click', () => {
+                dismissCount++;
+                if (dismissCount === 1) {
+                    dismissButton.textContent = 'Try Again';
+                    flashupElement.querySelector('.flashup-message').textContent = 'Nice try. Try harder.';
+                } else if (dismissCount === 2) {
+                    dismissButton.textContent = 'Buy Now';
+                    flashupElement.querySelector('.flashup-message').textContent = 'Redirecting your soul to commerce...';
+                } else {
+                    window.open('https://www.amazon.com/s?k=calculator+from+hell', '_blank');
+                    flashupElement.remove();
+                }
+            });
+
             flashupContainer.appendChild(flashupElement);
             playSound(isAd ? 'evil' : 'wrong');
-            setTimeout(() => { if(flashupElement.parentNode) flashupElement.remove(); }, duration);
         }
         function randomizeButtonText() {
             if (Math.random() < HELLISH_BUTTON_TEXT_CHANCE) {

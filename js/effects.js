@@ -21,6 +21,11 @@ export function applyRandomEffects(triggerId) {
     if (triggerId !== 'equals' && Math.random() < 0.18) {
         showRandomFlashup(2400);
     }
+
+    if (Math.random() < 0.05) {
+        document.body.classList.add('power-surge');
+        setTimeout(() => document.body.classList.remove('power-surge'), 200);
+    }
 }
 
 export function flashScreen() {
@@ -76,7 +81,25 @@ export function showRandomFlashup(duration = 3000) {
     el.addEventListener('click', () => el.remove());
     flashupContainer.appendChild(el);
     playSound(useAds ? 'evil' : 'wrong');
-    setTimeout(() => {
-        if (el.parentNode) el.remove();
-    }, duration);
+
+    const dismissButton = document.createElement('button');
+    dismissButton.textContent = 'X';
+    dismissButton.classList.add('flashup-dismiss');
+    flashupElement.appendChild(dismissButton);
+
+    let dismissCount = 0;
+    dismissButton.addEventListener('click', () => {
+        dismissCount++;
+        if (dismissCount === 1) {
+            dismissButton.textContent = 'Try Again';
+            flashupElement.querySelector('.flashup-message').textContent = 'Nice try. Try harder.';
+        } else if (dismissCount === 2) {
+            dismissButton.textContent = 'Buy Now';
+            flashupElement.querySelector('.flashup-message').textContent = 'Redirecting your soul to commerce...';
+        } else {
+            window.open('https://www.amazon.com/s?k=calculator+from+hell', '_blank');
+            flashupElement.remove();
+        }
+    });
+
 }

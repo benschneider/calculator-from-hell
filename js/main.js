@@ -173,3 +173,21 @@ window.addEventListener('DOMContentLoaded', () => {
     setupAudio();
     updateDisplay();
 });
+
+// Trigger random glitch after inactivity
+let glitchTimer;
+function triggerGlitchEffect() {
+    const randomButton = document.querySelector('#buttons-container button[data-value]');
+    if (randomButton) {
+        randomButton.classList.add('glitching');
+        setTimeout(() => randomButton.classList.remove('glitching'), 2000);
+    }
+}
+function resetGlitchTimer() {
+    clearTimeout(glitchTimer);
+    glitchTimer = setTimeout(triggerGlitchEffect, 12000); // 12s inactivity
+}
+['mousemove', 'keydown', 'click'].forEach(e =>
+    document.addEventListener(e, resetGlitchTimer)
+);
+resetGlitchTimer();
