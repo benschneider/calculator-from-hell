@@ -416,40 +416,46 @@
         function handleButtonPress(button) {
             if (interactionLocked) return;
             interactionLocked = true;
-
+        
             const value = button.dataset.value;
             const id = button.id;
             let actionFn;
-
-            // Input Corruption (Infernal Mode Only)
-            let corruptedValue = value;
-            if (infernalMode && value && !isNaN(value) && Math.random() < INPUT_CORRUPTION_CHANCE) {
-                corruptedValue = Math.floor(Math.random() * 10).toString(); // Random digit 0-9
-                addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
-                playSound('wrong');
-                flashScreen();
-            }
-
-
-            if (corruptedValue) { // Use corrupted value if it exists
-                actionFn = () => handleValueInput(corruptedValue);
-            } else {
+        
+            // Buttons without data-value use IDs
+            if (!value) {
                 switch (id) {
                     case 'clear': actionFn = handleClear; break;
                     case 'backspace': actionFn = handleBackspace; break;
                     case 'equals': actionFn = handleEquals; break;
-                    case 'megacorp': actionFn = handleMegaCorp; break; // Renamed
+                    case 'megacorp': actionFn = handleMegaCorp; break;
                     case 'share': actionFn = handleShare; break;
                     default: actionFn = () => {};
                 }
+            } else {
+                // Check if it's an operator
+                const operators = ['/', '*', '-', '+'];
+                const corruptedValue = (infernalMode && !isNaN(value) && Math.random() < INPUT_CORRUPTION_CHANCE)
+                    ? Math.floor(Math.random() * 10).toString()
+                    : value;
+        
+                if (infernalMode && corruptedValue !== value && !isNaN(value)) {
+                    addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
+                    playSound('wrong');
+                    flashScreen();
+                }
+        
+                if (operators.includes(value)) {
+                    actionFn = () => handleOperatorInput(value);
+                } else {
+                    actionFn = () => handleValueInput(corruptedValue);
+                }
             }
-
-            // Button Text Randomization
+        
             randomizeButtonText();
-
+        
             setTimeout(() => {
                 actionFn();
-                applyRandomEffects(id); // Apply visual/audio effects
+                applyRandomEffects(id || value);
                 interactionLocked = false;
             }, BUTTON_ANIMATION_DELAY);
         }
