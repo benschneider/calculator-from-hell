@@ -415,7 +415,7 @@
         // --- Core Button Handling Logic ---
         function handleButtonPress(button) {
             if (interactionLocked) return;
-            interactionLocked = true;
+            interactionLocked = false;
         
             const value = button.dataset.value;
             const id = button.id;
@@ -533,7 +533,7 @@
             }
             loadingBar.classList.add('active');
             addComment("Reckoning... Please wait while we consult the Infernal Abacus.");
-            const delay = infernalMode ? Math.random() * 3500 + 1500 : Math.random() * 1200 + 400;
+            const delay = 1000;
             showRandomFlashup(delay * 0.7); // Show during calc
 
             setTimeout(() => {
