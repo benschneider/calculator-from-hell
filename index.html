@@ -327,7 +327,12 @@
         const megaCorpBtn = document.getElementById('megacorp'); // Renamed
         const shareBtn = document.getElementById('share');
         const numberAndOperatorBtns = document.querySelectorAll('#buttons-container button:not(#clear):not(#backspace):not(#equals):not(#megacorp)');
-
+        const commentsOperation = {
+                                    '+': ["Addition? Really stretching your limits there.", "More? Always more with you.", "Adding things won’t fill the void."],
+                                    '-': ["Subtraction? Trying to make yourself smaller?", "Taking things away, like your motivation?", "Subtracting... your dignity."],
+                                    '*': ["Multiplying? Someone thinks they're fancy.", "Exponential disappointment incoming.", "Don't get too carried away now."],
+                                    '/': ["Division? Dividing what’s already broken?", "Splitting hairs, are we?", "Divide and... flail."]
+                                };
         // Audio Elements
         const sounds = {
             evil: document.getElementById('sound-evil-laugh'),
@@ -640,10 +645,15 @@
         function updateDisplay() { display.textContent = currentInput; }
         function addComment(text) { comment.textContent = text; comment.scrollTop = comment.scrollHeight; }
         function addRandomComment(commentArray, value = null) {
-             let chosenComment = commentArray[Math.floor(Math.random() * commentArray.length)];
-             if (value !== null && typeof chosenComment === 'string') { chosenComment = chosenComment.replace('{val}', value); }
-             addComment(chosenComment);
+            if (!Array.isArray(commentArray) || commentArray.length === 0) return;
+            let chosenComment = commentArray[Math.floor(Math.random() * commentArray.length)];
+            if (value !== null && typeof chosenComment === 'string') {
+                chosenComment = chosenComment.replace('{val}', value);
+            }
+            addComment(chosenComment);
         }
+
+        
         function addResultComment(num1, num2) {
              if (Math.abs(num1) < 10 && Math.abs(num2) < 10 && operation !== '*' && operation !== '/') { addRandomComment(commentsEasyResult); }
              else { addRandomComment(commentsHardResult); }
