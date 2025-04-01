@@ -1,9 +1,12 @@
-
-
 import { setupAudio, playSound, updateSoundState } from './audio.js';
 import { setSarcasmLevel, commentsOperation, addComment, addRandomComment, addResultComment, checkSpecialNumbers } from './comments.js';
 import { applyRandomEffects, flashScreen } from './effects.js';
 import { isNumeric } from './utils.js';
+import { commentsOperation } from './content/operations.js';
+import { extraButtons } from './content/buttons-extra.js';
+import { megaCorpModes } from './content/billionaires.js';
+
+let currentCorpIndex = 0;
 
 const display = document.getElementById('display');
 const comment = document.getElementById('comment');
@@ -62,7 +65,7 @@ function handleButtonPress(button) {
         case 'clear': actionFn = handleClear; break;
         case 'backspace': actionFn = handleBackspace; break;
         case 'equals': actionFn = handleEquals; break;
-        case 'megacorp': actionFn = () => addComment("MegaCorp™ has claimed your soul."); break;
+        case 'megacorp': actionFn = handleMegaCorp; break;
         case 'share': actionFn = () => navigator.clipboard.writeText(currentInput); break;
     }
 
@@ -168,10 +171,38 @@ function updateDisplay() {
     display.textContent = currentInput;
 }
 
+function randomizeMegaCorpButton() {
+    const mode = megaCorpModes[currentCorpIndex];
+    megaCorpBtn.textContent = mode.label;
+    currentCorpIndex = (currentCorpIndex + 1) % megaCorpModes.length;
+}
+
+function handleMegaCorp() {
+    const mode = megaCorpModes[(currentCorpIndex - 1 + megaCorpModes.length) % megaCorpModes.length];
+    const quote = mode.comments[Math.floor(Math.random() * mode.comments.length)];
+    addComment(quote);
+    playSound('evil');
+    randomizeMegaCorpButton();
+}
+
+function renderExtraButtons() {
+    const container = document.getElementById('buttons-container');
+    extraButtons.forEach(btn => {
+      const button = document.createElement('button');
+      button.id = btn.id;
+      button.textContent = btn.label;
+      button.className = 'special'; // Style it as needed
+      button.addEventListener('click', btn.onClick);
+      container.appendChild(button);
+    });
+}
+
 window.addEventListener('DOMContentLoaded', () => {
     setupEventListeners();
     setupAudio();
     updateDisplay();
+    renderExtraButtons();
+    randomizeMegaCorpButton();
 });
 
 // Trigger random glitch after inactivity
