@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator from Hell</title>
-    <!-- Link to external CSS (Consider consolidating embedded styles into this later) -->
+    <!-- Embedded style block REMOVED previously -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
     <div id="calculator-wrapper">
         <div class="smoke"></div>
+        <!-- Eyes are here -->
         <div id="left-eye" class="demon-eye" style="top: 20px; left: 30px;"></div>
         <div id="right-eye" class="demon-eye" style="top: 20px; left: 60px;"></div>
 
@@ -23,10 +24,10 @@
 
             <!-- Sarcasm Level -->
             <div>
-                <label>Sarcasm Level (Choose Your Torment):</label>
-                <div class="sarcasm-buttons">
+                <label for="sarcasm-group">Sarcasm Level (Choose Your Torment):</label> <!-- Added for attribute -->
+                <div class="sarcasm-buttons" id="sarcasm-group">
                     <button id="mild">Mildly Annoying</button>
-                    <button id="snarky">Snarky (Default)</button>
+                    <button id="snarky" class="sarcasm-active">Snarky (Default)</button> <!-- Add active state maybe? -->
                     <button id="brutal">Soul Crushing</button>
                 </div>
             </div>
@@ -35,7 +36,7 @@
             <div class="display-area" id="display-area">
                 <div id="loading" class="loading-bar"></div>
                 <div id="display" class="display-text">0</div>
-                <div id="comment" class="comment-text">Welcome, mortal. Your suffering begins now.</div>
+                <div id="comment" class="comment-text">Let's begin...</div> <!-- Updated initial text -->
             </div>
 
             <!-- Toggles -->
@@ -48,8 +49,17 @@
                 </div>
             </div>
 
+             <!-- Chaos Meter - IDEA! Could be a visual bar that fills with Infernal Mode use -->
+             <!-- <div class="chaos-meter-container">
+                 <label>Chaos Level:</label>
+                 <div id="chaos-bar" class="chaos-bar">
+                     <div id="chaos-fill" class="chaos-fill"></div>
+                 </div>
+             </div> -->
+
             <!-- Buttons -->
             <div class="buttons-grid" id="buttons-container">
+                 <!-- Standard Buttons -->
                 <button class="button-smudge" data-value="7">7</button>
                 <button data-value="8">8</button>
                 <button data-value="9">9</button>
@@ -70,9 +80,13 @@
                 <button id="equals" class="equals">=</button>
                 <button data-value="+" class="operator">+</button>
 
+                <!-- Function Buttons -->
                 <button id="clear" class="span-2 clear">AC</button>
                 <button id="backspace">⌫</button>
-                <button id="megacorp" class="corp">?</button> <!-- Changed default text to ? -->
+                <button id="megacorp" class="corp">?</button>
+
+                 <!-- Hidden Cursed Button - IDEA! Appears sometimes? -->
+                 <!-- <button id="cursed-random" class="cursed" style="display: none;">⛧</button> -->
             </div>
 
             <!-- Share Button -->
@@ -88,480 +102,11 @@
     <audio id="sound-correct" src="sounds/correctanswer.mp3" preload="auto"></audio>
     <audio id="sound-sigh" src="sounds/disappointed.mp3" preload="auto"></audio>
     <audio id="sound-ambient-hell" src="sounds/hell_ambient.mp3" preload="auto" loop></audio>
+     <!-- IDEA: More sounds? Typing clicks, error buzzes, random whispers? -->
+     <!-- <audio id="sound-keypress" src="sounds/keypress.mp3" preload="auto"></audio> -->
+     <!-- <audio id="sound-whisper" src="sounds/whisper.mp3" preload="auto"></audio> -->
 
-
-    <script>
-        // --- Constants ---
-        // BUTTON_ANIMATION_DELAY, SOUL_TAX_CHANCE, INPUT_CORRUPTION_CHANCE, HELLISH_BUTTON_TEXT_CHANCE remain here for now
-        const BUTTON_ANIMATION_DELAY = 750;
-        const SOUL_TAX_CHANCE = 0.1;
-        const INPUT_CORRUPTION_CHANCE = 0.05;
-        const HELLISH_BUTTON_TEXT_CHANCE = 0.2;
-
-        // --- DOM Elements ---
-        // These are needed by the remaining JS in this block. main.js also gets them.
-        const display = document.getElementById('display');
-        const comment = document.getElementById('comment');
-        const loadingBar = document.getElementById('loading');
-        const calculatorWrapper = document.getElementById('calculator-wrapper');
-        const calculator = document.getElementById('calculator');
-        const buttonsContainer = document.getElementById('buttons-container');
-        const flashupContainer = document.getElementById('flashup-container'); // Needed? Might only be needed by effects
-        const body = document.body; // Needed by remaining flashScreen calls? No, removed. Keep for now if used elsewhere.
-        const displayArea = document.getElementById('display-area'); // Needed by remaining glyph-active calls? No, removed. Keep if used elsewhere.
-
-        // Buttons needed by remaining logic
-        const clearBtn = document.getElementById('clear');
-        const backspaceBtn = document.getElementById('backspace');
-        const equalsBtn = document.getElementById('equals');
-        const megaCorpBtn = document.getElementById('megacorp');
-        const shareBtn = document.getElementById('share');
-        const numberAndOperatorBtns = document.querySelectorAll('#buttons-container button:not(#clear):not(#backspace):not(#equals):not(#megacorp):not(#share)'); // Updated selector slightly
-
-        // Operation Comments (Move to comments.js later)
-        const commentsOperation = {
-            '+': ["Addition? Really stretching your limits there.", "More? Always more with you.", "Adding things won’t fill the void."],
-            '-': ["Subtraction? Trying to make yourself smaller?", "Taking things away, like your motivation?", "Subtracting... your dignity."],
-            '*': ["Multiplying? Someone thinks they're fancy.", "Exponential disappointment incoming.", "Don't get too carried away now."],
-            '/': ["Division? Dividing what’s already broken?", "Splitting hairs, are we?", "Divide and... flail."]
-        };
-        // Audio Elements (Move to audio.js later)
-        const sounds = {
-            evil: document.getElementById('sound-evil-laugh'),
-            wrong: document.getElementById('sound-wrong'),
-            correct: document.getElementById('sound-correct'),
-            sigh: document.getElementById('sound-sigh'),
-            ambient: document.getElementById('sound-ambient-hell'),
-        };
-
-        // --- State Variables --- (Move to main.js later)
-        let currentInput = '0';
-        let previousInput = '';
-        let operation = null;
-        let resetInput = false;
-        let sarcasmLevel = 'snarky';
-        let infernalMode = false; // Will be controlled via main.js eventually
-        let soundEnabled = true; // Will be controlled via main.js eventually
-        // let calculatorMoving = false; // Moved to effects.js
-        let interactionLocked = false;
-        let ambientSoundPlaying = false; // Will be controlled via main.js/audio.js eventually
-
-        // --- Hellish Content Arrays --- (Move relevant parts to modules later)
-        const commentsInput = [
-            "Pushing buttons, achieving nothing.", "Is {val} your final answer? Pathetic.",
-             "Entropy increases with every press.", "Even demons find this pace tedious."
-        ];
-        const commentsEasyResult = ["My abacus is faster.", "A truly monumental calculation. For an ant."];
-        const commentsHardResult = ["Behold! Mediocrity quantified!", "Don't hurt yourself thinking."];
-        const commentsMegaCorp = [
-            "Calculating worker exploitation rates...", "Does this number fit on your boss's yacht?",
-            "Remember: You are expendable. This number isn't.", "Efficiency is key. Unlike your calculation.",
-            "MegaCorp™ reminds you: Happiness is mandatory.", "Did you factor in the soul-crushing commute?",
-            "Result sponsored by 16 hour shifts.", "Is this your quarterly target? Aim lower.",
-            "Buy N-Get 1 Free (Souls only).", "Data harvested. Thank you for your compliance."
-        ];
-         // Special comments need consolidation maybe?
-        const commentsSpecial = {
-             666: "Ah, the number of the beast. How... predictable.",
-             42: "The answer to life, the universe, and... your pointless calculation.",
-             69: "Heh. Nice. Now get back to suffering.",
-             420: "Blaze it? More like braise your soul.",
-             13: "Unlucky for you. As always.",
-             7: "Seven deadly sins... or just your result?",
-             1000000: "A million? Trying to count souls condemned?",
-             nearZero: "Infinitesimal. Like your chances of escape.",
-             negative: "Negative result? How fitting for your outlook.",
-             large: "Such a large number. Trying to impress the void?"
-        };
-        // flashupAds / flashupGlitches MOVED TO effects.js
-
-        const hellishButtonText = {
-            clear: ["PURGE", "RESET?", "OBLIVION", "DAMN IT"],
-            equals: ["JUDGEMENT", "RECKONING", "ETERNITY?", "CALCULATE DOOM"]
-        };
-
-        // --- Initialization ---
-        updateDisplay(); // Keep for now
-        setupEventListeners(); // Keep for now
-        updateSoundState(); // Keep for now
-
-        setTimeout(() => {
-            if (!ambientSoundPlaying) {
-                addComment("Click anywhere to unlock the ambient torment.");
-            }
-        }, 1500); // Keep for now
-
-        // --- Event Listeners Setup ---
-        function setupEventListeners() { // This function remains here for now
-            document.getElementById('mild').addEventListener('click', () => setSarcasmLevel('mild'));
-            document.getElementById('snarky').addEventListener('click', () => setSarcasmLevel('snarky'));
-            document.getElementById('brutal').addEventListener('click', () => setSarcasmLevel('brutal'));
-            // Note: The 'infernal-mode' listener is duplicated in main.js for now. We'll fix this.
-            document.getElementById('infernal-mode').addEventListener('change', handleInfernalToggle);
-            document.getElementById('sound').addEventListener('change', handleSoundToggle);
-
-            numberAndOperatorBtns.forEach(button => button.addEventListener('click', () => handleButtonPress(button)));
-            clearBtn.addEventListener('click', () => handleButtonPress(clearBtn));
-            backspaceBtn.addEventListener('click', () => handleButtonPress(backspaceBtn));
-            equalsBtn.addEventListener('click', () => handleButtonPress(equalsBtn));
-            megaCorpBtn.addEventListener('click', () => handleButtonPress(megaCorpBtn));
-            shareBtn.addEventListener('click', () => handleButtonPress(shareBtn));
-
-            // document.addEventListener('mousemove', moveDemonEyes); // MOVED TO main.js
-        }
-
-        // --- Core Button Handling Logic --- (Remains here for now)
-        function handleButtonPress(button) {
-            // Check if interaction is locked
-             if (interactionLocked) {
-                 console.log("Interaction locked, ignoring press.");
-                 return;
-             }
-             interactionLocked = true;
-             console.log(`Button Press: ${button.id || button.dataset.value}`); // Debugging
-
-            const value = button.dataset.value;
-            const id = button.id;
-            let actionFn;
-
-            const operators = ['/', '*', '-', '+'];
-            const isOperator = value && operators.includes(value);
-
-            switch (id) {
-                case 'clear': actionFn = handleClear; break;
-                case 'backspace': actionFn = handleBackspace; break;
-                case 'equals': actionFn = handleEquals; break;
-                case 'megacorp': actionFn = handleMegaCorp; break;
-                case 'share': actionFn = handleShare; break;
-            }
-
-            if (!actionFn && value !== undefined) {
-                let corruptedValue = value;
-                const localInfernalMode = document.getElementById('infernal-mode').checked; // Read directly for now
-
-                if (localInfernalMode && !isNaN(Number(value)) && Math.random() < INPUT_CORRUPTION_CHANCE) {
-                    corruptedValue = Math.floor(Math.random() * 10).toString();
-                    addComment(`Oops, finger slipped? You pressed ${corruptedValue}, not ${value}. My bad.`);
-                    playSound('wrong');
-                    // flashScreen(); // MOVED - would need to call imported function
-                }
-
-                if (isOperator) {
-                    actionFn = () => handleOperatorInput(corruptedValue);
-                } else {
-                    actionFn = () => handleValueInput(corruptedValue);
-                }
-            }
-
-            if (!actionFn) {
-                console.warn("No action defined for button:", button);
-                 interactionLocked = false; // Unlock if no action
-                return;
-            }
-
-             console.log(`Executing action for ${button.id || button.dataset.value} in ${BUTTON_ANIMATION_DELAY}ms`); // Debugging
-            setTimeout(() => {
-                console.log(`Running action for ${button.id || button.dataset.value}`); // Debugging
-                try {
-                    actionFn();
-                    // applyRandomEffects(id || value); // MOVED - called from main.js listener now
-                    randomizeButtonText(); // Keep this random text change here for now
-                } catch (error) {
-                    console.error("Error during button action:", error);
-                    addComment("Something broke. Probably your spirit."); // Error handling comment
-                } finally {
-                     console.log(`Unlocking interaction after ${button.id || button.dataset.value}`); // Debugging
-                    interactionLocked = false; // Ensure unlock even if error occurs
-                }
-            }, BUTTON_ANIMATION_DELAY);
-        }
-
-
-        // --- Apply Random Visual/Audio Effects ---
-        // applyRandomEffects MOVED TO effects.js
-
-
-        // --- Specific Button Action Functions --- (Remain here for now)
-        function handleValueInput(value) {
-             if (value === '.' && currentInput.includes('.')) {
-                 addComment("Decimal point obsession? Trying to reach infinite precision in Hell?");
-                 playSound('wrong'); /* flashScreen(); */ return; // flashScreen MOVED
-             }
-             if (currentInput === '0' || resetInput) { currentInput = ''; resetInput = false; }
-             if (currentInput.length > 20) {
-                 addComment("Trying to count the grains of sand on the shores of Acheron?");
-                 playSound('wrong'); return;
-             }
-             currentInput += value;
-             updateDisplay();
-
-             if (Math.random() > 0.6) addRandomComment(commentsInput, value);
-
-             // Removed automatic call to handleOperatorInput here, it's handled by button press logic
-        }
-
-        function handleOperatorInput(opValue) {
-             if (operation !== null && !resetInput) calculate();
-             previousInput = currentInput;
-             operation = opValue;
-             resetInput = true;
-             addRandomComment(commentsOperation[operation]);
-        }
-
-        function handleClear() {
-            currentInput = '0'; previousInput = ''; operation = null; resetInput = false;
-            updateDisplay();
-            addComment("Purged. Like your hopes and dreams.");
-            playSound('sigh');
-            // Reset effects - these would need to call imported functions or be handled centrally
-            // displayArea.classList.remove('glyph-active');
-            // calculatorWrapper.classList.remove('distorted');
-        }
-
-        function handleBackspace() {
-            currentInput = currentInput.length <= 1 ? '0' : currentInput.slice(0, -1);
-            updateDisplay();
-            addComment("Rewinding time? Futile, but go ahead.");
-        }
-
-        function handleEquals() {
-            if (operation === null) {
-                addComment("Equals what? The void? Specify an operation, mortal.");
-                playSound('wrong'); /* flashScreen(); */ return; // flashScreen MOVED
-            }
-            loadingBar.classList.add('active');
-            addComment("Reckoning... Please wait while we consult the Infernal Abacus.");
-            const delay = 1000;
-            // showRandomFlashup(delay * 0.7); // MOVED - Needs element & functions passed
-
-            setTimeout(() => {
-                loadingBar.classList.remove('active');
-                calculate();
-                checkSpecialNumbers();
-                 const localInfernalMode = document.getElementById('infernal-mode').checked; // Read directly
-                if (localInfernalMode && Math.random() > 0.35) suggestDemonicAlternative();
-            }, delay);
-        }
-
-        function handleMegaCorp() {
-            addRandomComment(commentsMegaCorp);
-            playSound('evil');
-        }
-
-        function handleShare() {
-            const shareText = `I survived the Calculator from Hell (barely) and got: ${currentInput}. Witness my torment: ${window.location.href}`;
-            if (navigator.share) {
-                navigator.share({ title: 'My Hellish Calculation', text: shareText, url: window.location.href })
-                    .then(() => addComment("Misery shared. Excellent."))
-                    .catch(err => {
-                         console.log("Share API failed, using fallback.", err);
-                         fallbackShare(shareText);
-                    });
-            } else {
-                 console.log("Share API not supported, using fallback.");
-                 fallbackShare(shareText);
-            }
-        }
-
-        // --- Toggle Handlers --- (Remain here, but state might be duplicated with main.js)
-        function handleInfernalToggle(e) {
-            infernalMode = e.target.checked; // Update local state
-            addComment(infernalMode ? "Infernal Mode Unleashed! 🔥 Maximum Suffering Engaged." : "Infernal Mode Deactivated. Boring.");
-            playSound(infernalMode ? 'evil' : 'sigh');
-        }
-
-        function handleSoundToggle(e) {
-            soundEnabled = e.target.checked; // Update local state
-            addComment(soundEnabled ? "The cacophony of Hell welcomes you." : "Silence? Are you deaf to the abyss?");
-            updateSoundState();
-        }
-
-        // --- Sound State Management --- (Keep for now, related to local `soundEnabled` and `sounds`)
-        function updateSoundState() {
-             const localSoundEnabled = document.getElementById('sound').checked; // Read directly
-             // Handle Ambient sound
-            if (localSoundEnabled && !ambientSoundPlaying) {
-                sounds.ambient.volume = 0.15;
-                sounds.ambient.play().then(() => {
-                     ambientSoundPlaying = true;
-                     console.log("Ambient sound started.");
-                 }).catch(e => {
-                     console.error("Ambient sound failed to play:", e);
-                     // Possibly add a comment asking for user interaction if autoplay fails
-                     if (e.name === 'NotAllowedError') {
-                        addComment("Click me or suffer in silence... Your choice.");
-                     }
-                 });
-            } else if (!localSoundEnabled && ambientSoundPlaying) {
-                sounds.ambient.pause();
-                ambientSoundPlaying = false;
-                console.log("Ambient sound stopped.");
-            }
-            // Mute/unmute all sounds
-             Object.values(sounds).forEach(sound => sound.muted = !localSoundEnabled);
-             // Ensure ambient matches the master toggle regardless of play state
-             sounds.ambient.muted = !localSoundEnabled;
-        }
-
-
-        // --- Calculation Logic --- (Keep here for now)
-        function calculate() {
-            let result;
-            const prev = parseFloat(previousInput);
-            const current = parseFloat(currentInput);
-
-            if (isNaN(prev) || isNaN(current)) {
-                addComment("Error: Gibberish input detected. Speak numbers or face the void.");
-                playSound('wrong'); /* flashScreen(); */ currentInput = 'NaN?'; updateDisplay(); operation = null; resetInput = true; return;
-            }
-
-            switch (operation) {
-                case '+': result = prev + current; break;
-                case '-': result = prev - current; break;
-                case '*': result = prev * current; break;
-                case '/':
-                    if (current === 0) {
-                        addComment("Division by zero?! You tear spacetime? The fabric weeps!");
-                        playSound('wrong'); /* flashScreen(); */ currentInput = '∞!'; updateDisplay(); operation = null; resetInput = true; return;
-                    }
-                    result = prev / current; break;
-                default: return;
-            }
-
-             const localInfernalMode = document.getElementById('infernal-mode').checked; // Read directly
-
-             if (localInfernalMode) {
-                 if (Math.random() < SOUL_TAX_CHANCE) {
-                     const tax = Math.abs(result * (Math.random() * 0.01 + 0.001));
-                     result -= tax;
-                     addComment(`Infernal Revenue Service deducts a Soul Tax of ${tax.toFixed(4)}.`);
-                     playSound('sigh');
-                 }
-                 if (Math.random() < 0.75) { result += (Math.random() * 0.6 - 0.3) * (Math.abs(result) * 0.02 + 0.1); }
-                 if (Math.random() < 0.15) { result = Math.random() * 1000 - 500; addComment("A demon whispered a different number. Trust the demon."); playSound('evil'); }
-             } else if (Math.random() < 0.1) {
-                  result += (Math.random() * 0.000005 - 0.0000025); addComment("Close enough for Hell.");
-             }
-
-            currentInput = result.toString();
-            if (currentInput.length > 15) { currentInput = parseFloat(currentInput).toExponential(9); }
-            updateDisplay();
-            addResultComment(prev, current);
-            playSound(localInfernalMode && Math.random() < 0.4 ? 'evil' : 'correct');
-
-            operation = null; resetInput = true;
-        }
-
-        // --- UI Update Functions --- (Keep for now)
-        function updateDisplay() { display.textContent = currentInput; }
-        function addComment(text) { comment.textContent = text; comment.scrollTop = comment.scrollHeight; }
-        function addRandomComment(commentArray, value = null) {
-            if (!Array.isArray(commentArray) || commentArray.length === 0) return;
-            let chosenComment = commentArray[Math.floor(Math.random() * commentArray.length)];
-            if (value !== null && typeof chosenComment === 'string') {
-                chosenComment = chosenComment.replace('{val}', value);
-            }
-            addComment(chosenComment);
-        }
-
-
-        function addResultComment(num1, num2) {
-             // Ensure operation is checked correctly
-             if (operation && Math.abs(num1) < 10 && Math.abs(num2) < 10 && operation !== '*' && operation !== '/') {
-                 addRandomComment(commentsEasyResult);
-             } else {
-                 addRandomComment(commentsHardResult);
-             }
-        }
-        function playSound(type) { // Keep simplified version here for now
-            if (!document.getElementById('sound').checked || !sounds[type]) return; // Read directly
-            try {
-                sounds[type].currentTime = 0;
-                sounds[type].play().catch(e => { /* console.error(`Sound play failed for ${type}:`, e); */ }); // Silence errors
-            } catch (e) { /* console.error(`Sound error for ${type}:`, e); */ }
-        }
-        function setSarcasmLevel(level) {
-            sarcasmLevel = level;
-            const levelComments = { mild: "Sarcasm: Mildly threatening.", snarky: "Sarcasm: Standard issue torment.", brutal: "Sarcasm: Maximum soul erosion." };
-            addComment(levelComments[level]); playSound('evil');
-        }
-
-        // --- Visual Effects ---
-        // randomizeButtonPositions MOVED TO effects.js
-        // moveCalculator MOVED TO effects.js
-        // moveDemonEyes MOVED TO effects.js
-        // flashScreen MOVED TO effects.js
-        // showRandomFlashup MOVED TO effects.js
-
-        function randomizeButtonText() { // Keep this minor effect here for now
-            if (Math.random() < HELLISH_BUTTON_TEXT_CHANCE) {
-                 const clearText = hellishButtonText.clear[Math.floor(Math.random() * hellishButtonText.clear.length)];
-                 clearBtn.textContent = clearText;
-            } else { clearBtn.textContent = "AC"; }
-
-            if (Math.random() < HELLISH_BUTTON_TEXT_CHANCE) {
-                 const equalsText = hellishButtonText.equals[Math.floor(Math.random() * hellishButtonText.equals.length)];
-                 equalsBtn.textContent = equalsText;
-            } else { equalsBtn.textContent = "="; }
-        }
-
-
-        // --- Special Number Checks & Alternatives --- (Keep here for now)
-        function checkSpecialNumbers() {
-            const num = parseFloat(currentInput); if (isNaN(num)) return;
-            let specialComment = null;
-            // Use the defined special comments object
-            for (const val in commentsSpecial) {
-                 // Handle specific number keys differently from descriptive keys
-                 if (!isNaN(Number(val))) { // Check if the key is a number-like string
-                     if (Math.abs(num - Number(val)) < 0.001) {
-                         specialComment = commentsSpecial[val];
-                         break;
-                     }
-                 }
-            }
-            // Handle descriptive keys after number checks
-            if (!specialComment && Math.abs(num) < 0.001 && num !== 0 && commentsSpecial.nearZero) specialComment = commentsSpecial.nearZero;
-            else if (!specialComment && num < 0 && commentsSpecial.negative) specialComment = commentsSpecial.negative;
-            else if (!specialComment && num > 1e12 && commentsSpecial.large) specialComment = commentsSpecial.large;
-
-
-            if (specialComment) {
-                 addComment(specialComment);
-                 // Play sound only for specific numbers
-                 if (Math.abs(num - 666) < 0.001 || Math.abs(num - 13) < 0.001) {
-                     playSound('evil');
-                 }
-            }
-        }
-        function suggestDemonicAlternative() {
-            const alternatives = [ `Perhaps the answer is closer to ${ (Math.random() * 1000 - 500).toFixed(2) }?`, "Reality is fluid here.", "Consult the Oracle (costs 1 soul).", "The Abyss whispers... 7.", `Did you account for sin^2?`];
-            setTimeout(() => { addComment(alternatives[Math.floor(Math.random() * alternatives.length)]); playSound('evil'); }, 700);
-        }
-
-        // --- Fallback Share --- (Keep here for now, maybe move to utils.js later)
-        function fallbackShare(text) {
-            const textarea = document.createElement('textarea');
-            textarea.value = text;
-            textarea.style.position = 'fixed'; // Prevent display issues
-            textarea.style.left = '-9999px';
-            body.appendChild(textarea);
-            textarea.select();
-            textarea.setSelectionRange(0, 99999); // For mobile devices
-            try {
-                 document.execCommand('copy');
-                 addComment("Share failed. Copied link & despair to clipboard.");
-                 playSound('sigh');
-            } catch (err) {
-                 console.error("Fallback copy failed:", err);
-                 addComment("Share failed. Copy failed. All fails.");
-                 playSound('wrong');
-            }
-            body.removeChild(textarea);
-        }
-
-    </script>
-    <!-- ****** NEW MODULE SCRIPT ****** -->
+    <!-- Module Loader -->
     <script type="module" src="js/main.js"></script>
 </body>
 </html>
