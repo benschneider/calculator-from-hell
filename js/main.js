@@ -1,3 +1,4 @@
+/* //Old code 
 import { setupAudio, playSound, updateSoundState } from './audio.js';
 import { setSarcasmLevel, commentsOperation, addComment, addRandomComment, addResultComment, checkSpecialNumbers } from './comments.js';
 import { applyRandomEffects, flashScreen } from './effects.js';
@@ -227,3 +228,68 @@ function resetGlitchTimer() {
     document.addEventListener(e, resetGlitchTimer)
 );
 resetGlitchTimer();
+*/
+
+// js/main.js //New Code
+import { applyRandomEffects, moveDemonEyes, showRandomFlashup, flashScreen } from './effects.js';
+// We will import other modules here later (audio, comments, etc.)
+
+// --- DOM Elements (Centralized in main.js for now) ---
+const display = document.getElementById('display');
+const comment = document.getElementById('comment');
+const loadingBar = document.getElementById('loading');
+const calculatorWrapper = document.getElementById('calculator-wrapper');
+const calculator = document.getElementById('calculator');
+const buttonsContainer = document.getElementById('buttons-container');
+const leftEye = document.getElementById('left-eye');
+const rightEye = document.getElementById('right-eye');
+const flashupContainer = document.getElementById('flashup-container');
+const body = document.body;
+const displayArea = document.getElementById('display-area');
+const infernalModeCheckbox = document.getElementById('infernal-mode'); // Need this
+
+// We will define state variables (currentInput, operation, infernalMode etc.) here later
+let infernalMode = false; // Initial state example
+
+// Placeholder functions for sound/comments (to be replaced by imports later)
+function playSound(type) { console.log(`DEBUG: Play sound ${type}`); /* TODO: Import real function */ }
+function addComment(text) { console.log(`DEBUG: Add comment: ${text}`); /* TODO: Import real function */ }
+
+// --- Event Listeners Setup (Partial) ---
+function setupEventListeners() {
+    // Mouse move listener for eyes
+    document.addEventListener('mousemove', (e) => {
+        // Pass event and necessary elements to the imported function
+        moveDemonEyes(e, calculatorWrapper, leftEye, rightEye);
+    });
+
+    // Example: How applyRandomEffects might be called after a button press
+    // (This button listener logic will be more complex later)
+    buttonsContainer.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            console.log("Button clicked - applying random effects (example)");
+            // Pass necessary state and elements
+            applyRandomEffects(infernalMode, calculatorWrapper, displayArea, buttonsContainer, flashupContainer, playSound, addComment);
+
+            // Example of calling flashScreen directly
+            if (Math.random() < 0.1) { // 10% chance on any button click
+                console.log("Flashing screen (example)");
+                flashScreen(body);
+            }
+        }
+    });
+
+    // Infernal Mode Toggle Listener (essential for applyRandomEffects)
+     infernalModeCheckbox.addEventListener('change', (e) => {
+        infernalMode = e.target.checked;
+        console.log(`Infernal mode set to: ${infernalMode}`);
+        // Add comment/sound related to toggle later
+    });
+
+    // TODO: Add ALL other event listeners here later (numbers, operators, clear, etc.)
+}
+
+// --- Initialization ---
+console.log("Main.js loaded");
+setupEventListeners();
+// TODO: Add initial display updates, etc. here later

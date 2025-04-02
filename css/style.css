@@ -1,4 +1,4 @@
-/* --- Animations --- */
+/* --- Animations (Consolidated) --- */
 @keyframes flicker {
     0% { opacity: 0.8; }
     50% { opacity: 1; }
@@ -36,7 +36,7 @@
     to { opacity: 1; transform: scale(1) rotate(0deg); }
 }
 
-@keyframes glitchText {
+@keyframes glitchText { /* From external CSS */
     0% { text-shadow: 2px 0 red, -2px 0 cyan; }
     20% { text-shadow: -2px 0 red, 2px 0 cyan; }
     40% { text-shadow: 1px -1px red, -1px 1px cyan; }
@@ -45,12 +45,12 @@
     100% { text-shadow: 0 0 red, 0 0 cyan; }
 }
 
-@keyframes powerSurge {
-    0%, 100% { background-color: black; }
+@keyframes powerSurge { /* From external CSS */
+    0%, 100% { background-color: black; } /* Applied to body */
     50% { background-color: #330000; }
 }
 
-/* --- Layout & Theme --- */
+/* --- Layout & Theme (Consolidated) --- */
 body {
     background-color: black;
     color: #ff4444;
@@ -68,8 +68,9 @@ body {
 #calculator-wrapper {
     position: relative;
     width: 100%;
-    max-width: 480px;
+    max-width: 480px; /* Max width from external */
     transition: transform 0.3s ease;
+    animation: none; /* Start with no animation */
 }
 
 #calculator-wrapper.distorted {
@@ -87,6 +88,7 @@ body {
     background: radial-gradient(circle, rgba(10,0,0,0.15) 0%, rgba(0,0,0,0) 70%);
     pointer-events: none;
     mix-blend-mode: overlay;
+    z-index: 1; /* Give smoke a z-index just in case, below eyes if needed */
 }
 
 .demon-eye {
@@ -97,6 +99,7 @@ body {
     border-radius: 50%;
     box-shadow: 0 0 15px red, 0 0 5px darkred inset;
     transition: all 0.1s ease-in-out;
+    z-index: 2; /* Explicitly put eyes above smoke/default elements */
 }
 
 #calculator {
@@ -105,27 +108,67 @@ body {
     border-radius: 0.5rem;
     padding: 1.5rem;
     box-shadow: 0 0.25rem 0.5rem rgba(100, 0, 0, 0.4), 0 0 30px rgba(50,0,0,0.3) inset;
-    position: relative;
+    position: relative; /* Needed for absolute children like display::before */
     overflow: hidden;
+    /* z-index: 0; /* Ensure calculator body is behind positioned elements like eyes/smoke */
 }
 
-/* --- Display Area --- */
-.display-area {
+/* --- Title (From Embedded) --- */
+#calculator h1 {
+    font-size: 1.875rem;
+    font-weight: bold;
+    text-align: center;
+    position: relative; /* Keep relative for flames? */
+    margin-bottom: 1.5rem;
+    color: #ff5555;
+    text-shadow: 0 0 5px #ff0000;
+}
+
+/* --- Sarcasm Level (From Embedded) --- */
+#calculator label { /* General label style */
+    display: block;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: #ff8888;
+}
+#calculator .sarcasm-buttons {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem; /* Added margin like toggles */
+}
+#calculator .sarcasm-buttons button {
+    background-color: #333;
+    color: #ccc;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    border: 1px solid #555;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s; /* Added transitions */
+}
+#calculator .sarcasm-buttons button:hover {
+    background-color: #550000;
+    border-color: #770000;
+    color: #ffaaaa;
+}
+
+/* --- Display Area (Consolidated) --- */
+.display-area { /* Use class from external for consistency */
     background-color: #111;
     border: 1px solid #440000;
     padding: 1rem;
     border-radius: 0.25rem;
     margin-bottom: 1rem;
-    height: 6rem;
+    min-height: 6rem; /* Use min-height from embedded */
+    height: auto; /* Allow height to adjust if needed */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     box-shadow: 0 0 10px rgba(0,0,0,0.5) inset;
     position: relative;
-    overflow: hidden;
+    overflow: hidden; /* Keep overflow hidden */
 }
 
-.display-area::before {
+.display-area::before { /* Glyph pseudo-element */
     content: "⊕⛧⊗";
     position: absolute;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -133,7 +176,7 @@ body {
     color: #ff0000;
     text-align: center;
     line-height: 6rem;
-    z-index: 0;
+    z-index: 0; /* Behind text */
     pointer-events: none;
     opacity: 0;
     animation: none;
@@ -145,23 +188,70 @@ body {
     animation: glyphFlicker 2s ease-in-out infinite;
 }
 
-.display-text {
+.display-area .loading-bar { /* From Embedded */
+    position: absolute;
+    top: 0; left: 0; height: 0.25rem;
+    background-color: #ff0000;
+    box-shadow: 0 0 5px #ff0000;
+    width: 0%; /* Initial state */
+    transition: width 2s; /* From Embedded */
+    z-index: 2; /* Above glyphs */
+}
+.display-area .loading-bar.active { /* From Embedded */
+    width: 100%;
+}
+
+
+.display-text { /* Combined .display-area .display-text */
     text-align: right;
     font-size: 1.5rem;
     font-family: monospace;
     color: #00ff00;
     text-shadow: 0 0 5px #00ff00;
-    z-index: 1;
+    min-height: 3rem; /* Ensure minimum height */
+    height: auto; /* Allow growth */
+    overflow-y: auto;
+    word-wrap: break-word;
+    flex-grow: 1; /* Takes up available space */
+    position: relative; /* Needed for z-index */
+    z-index: 1; /* Above glyphs */
 }
 
-.comment-text {
+.comment-text { /* Combined .display-area .comment-text */
     font-size: 0.875rem;
     color: #ff6666;
     font-style: italic;
-    z-index: 1;
+    min-height: 2rem; /* Ensure minimum height */
+    height: auto; /* Allow growth if needed */
+    overflow-y: auto;
+    flex-shrink: 0; /* Prevents shrinking */
+    position: relative; /* Needed for z-index */
+    z-index: 1; /* Above glyphs */
 }
 
-/* --- Buttons Grid --- */
+/* --- Toggles (From Embedded) --- */
+#calculator .toggle-container {
+     display: flex;
+     justify-content: space-between;
+     align-items: center; /* Align items vertically */
+     margin-bottom: 1rem;
+}
+#calculator .toggle-container div { /* Wrap label/checkbox for better alignment */
+    display: flex;
+    align-items: center;
+}
+#calculator .toggle-container input[type="checkbox"] {
+    margin-right: 0.5rem;
+    accent-color: red;
+    cursor: pointer; /* Indicate interactivity */
+}
+#calculator .toggle-container label {
+    color: #ffaaaa;
+    margin-bottom: 0; /* Override general label margin */
+    cursor: pointer; /* Indicate interactivity */
+}
+
+/* --- Buttons Grid (Consolidated) --- */
 .buttons-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -176,6 +266,7 @@ body {
     border: 1px solid #444;
     font-size: 1.1rem;
     font-weight: bold;
+    line-height: 1; /* Ensure consistent height */
     box-shadow: 0 2px 3px rgba(0,0,0,0.4), 0 1px 1px rgba(255,255,255,0.1) inset;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -197,35 +288,39 @@ body {
     border-color: #800;
     color: #eee;
 }
+.buttons-grid button.operator:hover { background-color: #800; border-color: #a00; }
 
 .buttons-grid button.equals {
     background-color: #060;
     border-color: #080;
     color: #eee;
 }
+.buttons-grid button.equals:hover { background-color: #080; border-color: #0a0; }
 
-.buttons-grid button.corp {
+.buttons-grid button.corp { /* Renamed from special */
     background-color: #404;
     border-color: #606;
     color: #eee;
 }
+.buttons-grid button.corp:hover { background-color: #606; border-color: #808; }
 
 .buttons-grid button.clear {
     background-color: #555;
     border-color: #777;
     color: #eee;
 }
+.buttons-grid button.clear:hover { background-color: #777; border-color: #999; }
 
 .buttons-grid button.span-2 {
     grid-column: span 2;
 }
 
-.button-smudge:hover {
+.button-smudge:hover { /* Keep the smudge effect */
     filter: blur(0.5px) contrast(1.2);
 }
 
-/* --- Share Button --- */
-#share {
+/* --- Share Button (Consolidated) --- */
+#share { /* Applied to button#share */
     background-color: #003366;
     color: #eee;
     padding: 0.5rem 1rem;
@@ -240,42 +335,63 @@ body {
     align-items: center;
     justify-content: center;
     text-shadow: 1px 1px 2px black;
+    transition: background-color 0.2s, border-color 0.2s; /* Added transition */
 }
 
 #share:hover {
     background-color: #004488;
     border-color: #0066cc;
 }
+/* Optional: Style for the icon inside share button */
+#share .share-icon {
+    margin-right: 0.5em;
+    display: inline-block; /* Allows transform */
+    /* transition: transform 0.3s ease; */ /* Optional fun effect */
+}
+/* #share:hover .share-icon { */
+    /* transform: scale(1.2) rotate(-10deg); */ /* Optional fun effect */
+/* } */
 
-/* --- Flashup --- */
+
+/* --- Flashup (Consolidated & Refined) --- */
 .flashup {
     position: absolute;
-    top: 10%;
-    left: 10%;
+    /* Centering using transform */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.8) rotate(-5deg); /* Initial state for animation */
     width: 80%;
-    height: 80%;
+    max-width: 400px; /* Add max-width */
+    /* height: 80%; Removed fixed height */
     background-color: rgba(20, 0, 0, 0.95);
     color: #ff4444;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    font-size: 1.5em;
+    font-size: 1.2em; /* Slightly smaller base */
     text-align: center;
     z-index: 100;
-    cursor: pointer;
+    cursor: default; /* Default cursor unless element inside is clickable */
     border: 2px solid #ff0000;
     box-shadow: 0 0 25px #ff0000, 0 0 15px #660000 inset;
     padding: 20px;
     border-radius: 10px;
-    opacity: 0;
+    opacity: 0; /* Start hidden */
     animation: fadeInFlashup 0.5s forwards;
     text-shadow: 1px 1px 3px black;
+}
+
+/* Override animation for when it's actually shown */
+.flashup-visible { /* JS could add this class instead of just appending */
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
 }
 
 .flashup-icon {
     font-size: 3em;
     margin-bottom: 15px;
+    display: inline-block; /* Needed for animation */
     animation: intenseShake 0.4s ease-in-out infinite alternate;
 }
 
@@ -291,6 +407,7 @@ body {
 
 .flashup-message {
     font-size: 0.9em;
+    margin-bottom: 15px; /* Add space before spinner/button */
 }
 
 .spinner {
@@ -300,19 +417,38 @@ body {
     width: 50px;
     height: 50px;
     animation: spin 1.5s linear infinite;
-    margin-top: 15px;
+    margin-top: 15px; /* From external */
 }
 
-.glitching {
+/* Flashup dismiss button (Example style if added via JS) */
+.flashup-dismiss {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: transparent;
+    border: 1px solid #ff4444;
+    color: #ff4444;
+    font-size: 1.2em;
+    line-height: 1;
+    padding: 0px 5px;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+.flashup-dismiss:hover {
+    background-color: #ff4444;
+    color: #111;
+}
+
+
+/* --- Misc Effects (From External CSS) --- */
+.glitching { /* Class to add via JS for glitch effect */
     animation: glitchText 0.5s infinite alternate;
 }
 
-.power-surge {
+.power-surge { /* Class to add to body */
     animation: powerSurge 0.2s ease-in-out;
 }
 
-/* --- Screen Flash Effect --- */
-.screen-flash {
-    background-color: #660000 !important;
+.screen-flash { /* Class added to body via JS */
+    background-color: #660000 !important; /* Keep important to override base */
 }
-
